@@ -202,4 +202,43 @@ describe('renderApp', () => {
     )
     expect(getByText(root, /Server ZIP package/i)).toBeTruthy()
   })
+
+  it('shows an active waiting state while a URL conversion is still running', async () => {
+    const root = document.createElement('div')
+    document.body.append(root)
+    let finishConversion: ((value: ConversionResult) => void) | undefined
+    const convertMrpack = vi.fn(
+      () =>
+        new Promise<ConversionResult>((resolve) => {
+          finishConversion = resolve
+        }),
+    )
+
+    renderApp(root, { convertMrpack })
+
+    fireEvent.click(getByRole(root, 'radio', { name: 'From URL' }))
+    fireEvent.input(getByLabelText(root, 'Paste .mrpack download URL'), {
+      target: { value: 'https://cdn.example/pack.mrpack' },
+    })
+    fireEvent.click(getByRole(root, 'button', { name: /Convert URL to ZIP/i }))
+
+    await waitFor(() => expect(convertMrpack).toHaveBeenCalled())
+
+    const convertButton = getByRole(root, 'button', { name: /Converting URL/i }) as HTMLButtonElement
+    const statusPanel = root.querySelector<HTMLElement>('#status-panel')
+    const progress = root.querySelector<HTMLProgressElement>('#progress')
+
+    expect(convertButton.disabled).toBe(true)
+    expect(statusPanel?.dataset.state).toBe('busy')
+    expect(statusPanel?.getAttribute('aria-busy')).toBe('true')
+    expect(getByText(root, 'Fetching the .mrpack file from the URL.')).toBeTruthy()
+    expect(progress?.hidden).toBe(false)
+    expect(progress?.hasAttribute('value')).toBe(false)
+
+    finishConversion?.(result({ status: 'success', missingFiles: [], filesDownloaded: 2, filesFailed: 0 }))
+
+    await waitFor(() => expect(getByText(root, 'ZIP ready')).toBeTruthy())
+    expect(convertButton.disabled).toBe(false)
+    expect(statusPanel?.getAttribute('aria-busy')).toBe('false')
+  })
 })

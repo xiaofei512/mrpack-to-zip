@@ -5,6 +5,7 @@ import {
   Download,
   FileArchive,
   Link,
+  LoaderCircle,
   Monitor,
   Server,
   Settings2,
@@ -48,6 +49,7 @@ export function renderApp(root: HTMLElement, dependencies: AppDependencies = {})
       Download,
       FileArchive,
       Link,
+      LoaderCircle,
       Monitor,
       Server,
       Settings2,
@@ -76,6 +78,7 @@ export function renderApp(root: HTMLElement, dependencies: AppDependencies = {})
 
   let latestResult: ConversionResult | null = null
   let latestInputType: string = 'upload'
+  let isConverting = false
 
   const syncSourceMode = () => {
     const mode = selectedSource(root)
@@ -84,8 +87,9 @@ export function renderApp(root: HTMLElement, dependencies: AppDependencies = {})
       panel.hidden = panel.dataset.sourcePanel !== mode
     }
 
-    convertButton.innerHTML = `<span data-lucide="download" aria-hidden="true"></span>${convertButtonText(mode)}`
-    createIcons({ root: convertButton, icons: { Download } })
+    if (!isConverting) {
+      renderConvertButton(convertButton, mode, false)
+    }
   }
 
   for (const input of sourceInputs) {
@@ -114,10 +118,11 @@ export function renderApp(root: HTMLElement, dependencies: AppDependencies = {})
     resultActions.hidden = true
     missingList.innerHTML = ''
     warningList.innerHTML = ''
-    showStatus(statusPanel, statusTitle, statusBody, 'Converting pack', 'Reading the manifest.', 'busy')
-    progress.hidden = false
-    progress.value = 0
-    progress.max = 1
+    isConverting = true
+    setFormBusy(form, true)
+    renderConvertButton(convertButton, input.type, true)
+    showStatus(statusPanel, statusTitle, statusBody, 'Converting pack', initialBusyMessage(input.type), 'busy')
+    showPendingProgress(progress)
 
     trackEvent(`${input.type}_submitted`, { input_type: input.type, target })
     trackEvent('convert_started', { input_type: input.type, target })
@@ -126,8 +131,7 @@ export function renderApp(root: HTMLElement, dependencies: AppDependencies = {})
       const result = await convertMrpack(input.value, {
         target,
         onProgress: (state) => {
-          progress.max = Math.max(state.total, 1)
-          progress.value = state.current
+          showMeasuredProgress(progress, state.current, state.total)
           statusBody.textContent = state.label
         },
       })
@@ -152,6 +156,10 @@ export function renderApp(root: HTMLElement, dependencies: AppDependencies = {})
         failure_reason: 'conversion_error',
         file_count_bucket: '0',
       })
+    } finally {
+      isConverting = false
+      setFormBusy(form, false)
+      renderConvertButton(convertButton, selectedSource(root), false)
     }
   })
 
@@ -204,6 +212,55 @@ export function renderApp(root: HTMLElement, dependencies: AppDependencies = {})
       file_count_bucket: fileCountBucket(latestResult.filesTotal),
     })
   })
+}
+
+function renderConvertButton(button: HTMLButtonElement, mode: SourceMode, isBusy: boolean) {
+  const icon = isBusy ? 'loader-circle' : 'download'
+  const text = isBusy ? busyButtonText(mode) : convertButtonText(mode)
+
+  button.innerHTML = `<span data-lucide="${icon}" aria-hidden="true"></span>${text}`
+  button.setAttribute('aria-busy', isBusy ? 'true' : 'false')
+  createIcons({ root: button, icons: { Download, LoaderCircle } })
+}
+
+function busyButtonText(mode: SourceMode) {
+  if (mode === 'project') {
+    return 'Finding pack'
+  }
+  if (mode === 'url') {
+    return 'Converting URL'
+  }
+  return 'Converting file'
+}
+
+function setFormBusy(form: HTMLFormElement, isBusy: boolean) {
+  for (const control of form.querySelectorAll<HTMLInputElement | HTMLButtonElement>(
+    'input, #convert-button',
+  )) {
+    control.disabled = isBusy
+  }
+}
+
+function initialBusyMessage(inputType: 'upload' | 'url' | 'project') {
+  if (inputType === 'project') {
+    return 'Finding the latest Modrinth .mrpack release.'
+  }
+  if (inputType === 'url') {
+    return 'Fetching the .mrpack file from the URL.'
+  }
+  return 'Reading the local .mrpack file.'
+}
+
+function showPendingProgress(progress: HTMLProgressElement) {
+  progress.hidden = false
+  progress.max = 1
+  progress.removeAttribute('value')
+}
+
+function showMeasuredProgress(progress: HTMLProgressElement, current: number, total: number) {
+  progress.hidden = false
+  progress.max = Math.max(total, 1)
+  progress.value = total === 0 ? 1 : current
 }
 
 function appTemplate() {
@@ -296,7 +353,7 @@ function appTemplate() {
 
           <button id="convert-button" class="primary-action" type="submit"><span data-lucide="download" aria-hidden="true"></span>Convert file to ZIP</button>
 
-          <section id="status-panel" class="status-panel" data-state="idle" aria-live="polite">
+          <section id="status-panel" class="status-panel" data-state="idle" aria-live="polite" aria-busy="false">
             <h2 id="status-title">Ready</h2>
             <p id="status-body">Local files are processed in your browser. Remote URLs are fetched directly by your browser.</p>
             <progress id="progress" value="0" max="1" hidden></progress>
@@ -541,6 +598,7 @@ function showStatus(
   state: 'idle' | 'busy' | 'success' | 'warning' | 'error',
 ) {
   panel.dataset.state = state
+  panel.setAttribute('aria-busy', state === 'busy' ? 'true' : 'false')
   title.textContent = heading
   body.textContent = message
 }
