@@ -79,6 +79,54 @@ describe('renderApp', () => {
     expect(getByText(root, 'What does hash checked mean?')).toBeTruthy()
   })
 
+  it('binds behavior to pre-rendered markup without replacing the static HTML', () => {
+    const root = document.createElement('div')
+    document.body.append(root)
+
+    root.innerHTML = `
+      <main data-static-marker="from-build">
+        <form id="converter-form">
+          <label><input type="radio" name="source" value="project">Project ID</label>
+          <label><input type="radio" name="source" value="url">From URL</label>
+          <label><input type="radio" name="source" value="upload" checked>Upload File</label>
+          <section data-source-panel="project" hidden>
+            <label for="project-id">Modrinth project ID, slug, or URL</label>
+            <input id="project-id" type="text">
+          </section>
+          <section data-source-panel="url" hidden>
+            <label for="mrpack-url">Direct .mrpack download URL</label>
+            <input id="mrpack-url" type="url">
+          </section>
+          <section data-source-panel="upload">
+            <label for="mrpack-file">Local .mrpack file</label>
+            <input id="mrpack-file" type="file">
+            <small id="file-name">No file selected</small>
+          </section>
+          <input type="checkbox" name="target" value="server" aria-label="Build a Server ZIP instead">
+          <button id="convert-button" type="submit">Convert file to ZIP</button>
+          <section id="status-panel" data-state="idle" aria-busy="false">
+            <h2 id="status-title">Ready</h2>
+            <p id="status-body">Ready.</p>
+            <progress id="progress" hidden></progress>
+            <ul id="warning-list"></ul>
+            <ul id="missing-list"></ul>
+            <div id="result-actions" hidden>
+              <button id="download-zip" type="button">Download ZIP</button>
+              <button id="copy-missing" type="button">Copy missing file list</button>
+              <button id="download-report" type="button">Download report .txt</button>
+            </div>
+          </section>
+        </form>
+      </main>
+    `
+
+    renderApp(root)
+
+    expect(root.querySelector('[data-static-marker="from-build"]')).toBeTruthy()
+    expect(getByRole(root, 'button', { name: /Convert file to ZIP/i })).toBeTruthy()
+    expect(sourcePanel(root, 'upload').hidden).toBe(false)
+  })
+
   it('submits only the active source and defaults to launcher target', async () => {
     const root = document.createElement('div')
     document.body.append(root)

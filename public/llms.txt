@@ -1,0 +1,24 @@
+# MRPACK to ZIP Converter
+
+> Client-side utility for converting Modrinth .mrpack files into launcher-ready ZIP packages.
+
+Website: https://mrpacktozip.net/
+Sitemap: https://mrpacktozip.net/sitemap.xml
+
+## Core Page
+
+- [MRPACK to ZIP Converter](https://mrpacktozip.net/): Convert local .mrpack files, direct .mrpack URLs, or Modrinth project IDs into launcher-ready ZIP packages.
+
+## What It Does
+
+- Reads `modrinth.index.json` from a `.mrpack` archive.
+- Copies shared overrides and selected client or server override folders.
+- Downloads manifest files in the browser.
+- Checks supported hashes before adding downloaded files.
+- Reports missing, blocked, unsafe, or mismatched files instead of hiding failures.
+
+## Boundaries
+
+This is an independent tool and is not affiliated with Modrinth, Mojang, Microsoft, Minecraft, or pack authors.
+
+Local uploads are processed in the browser. Remote URL and Modrinth project modes fetch remote files directly from the browser.
