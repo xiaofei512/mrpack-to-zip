@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://mrpack-to-zip.pages.dev/sitemap.xml
+Sitemap: https://mrpacktozip.net/sitemap.xml

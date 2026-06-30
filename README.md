@@ -5,7 +5,7 @@ Static Vite tool for converting Modrinth `.mrpack` files into regular ZIP packag
 ## Scope
 
 - Upload `.mrpack`, paste a direct `.mrpack` URL, or enter a Modrinth project ID/slug/URL.
-- Generate Client ZIP or Server ZIP.
+- Generate the recommended Launcher ZIP or the advanced Server ZIP.
 - Process local files in the browser.
 - Fetch remote files directly from the browser.
 - No backend proxy, no account, no mod hosting.
@@ -24,11 +24,11 @@ pnpm build
 Set these before a production SEO validation build:
 
 ```bash
-VITE_PUBLIC_SITE_URL=https://your-final-domain.example
+VITE_PUBLIC_SITE_URL=https://mrpacktozip.net
 VITE_GA_MEASUREMENT_ID=G-XXXXXXXXXX
 ```
 
-The temporary Cloudflare Pages domain is for smoke testing only. Formal SEO validation starts after the final domain is configured, then `robots.txt`, `sitemap.xml`, canonical, and Open Graph URLs should be updated to that domain.
+The production canonical URL is `https://mrpacktozip.net/`. Keep `robots.txt`, `sitemap.xml`, canonical, Open Graph, and JSON-LD URLs aligned to this root URL.
 
 ## Cloudflare Pages
 
@@ -36,4 +36,4 @@ The temporary Cloudflare Pages domain is for smoke testing only. Formal SEO vali
 - Build command: `pnpm build`
 - Output directory: `dist`
 
-The `public/_redirects` file makes `/` and `/mrpack-to-zip` render the same static app.
+The `public/_redirects` file redirects `/mrpack-to-zip` to `/`, then serves the static app for all routes.
