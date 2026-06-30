@@ -103,6 +103,32 @@ export function appMarkup() {
         </form>
       </section>
 
+      <section class="content-band guide-band" aria-labelledby="conversion-guide">
+        <h2 id="conversion-guide">How to use this converter</h2>
+        <ol class="guide-steps">
+          <li>
+            <strong>Choose your source</strong>
+            <p>Upload a local <code>.mrpack</code> file, paste a direct <code>.mrpack</code> URL, or enter a Modrinth project URL, slug, or ID.</p>
+          </li>
+          <li>
+            <strong>Keep Launcher ZIP selected</strong>
+            <p>Use the recommended Launcher ZIP for launcher imports and manual installs. Open Advanced only when you need a server-targeted ZIP.</p>
+          </li>
+          <li>
+            <strong>Click Convert</strong>
+            <p>The browser reads the pack manifest, fetches listed files, checks supported hashes, and builds the ZIP locally.</p>
+          </li>
+          <li>
+            <strong>Download the result</strong>
+            <p>Click <strong>Download ZIP</strong> when conversion finishes.</p>
+          </li>
+          <li>
+            <strong>Review missing files if needed</strong>
+            <p>If files are missing, copy or download the missing file report and handle those files manually from the pack page.</p>
+          </li>
+        </ol>
+      </section>
+
       <section class="content-band" aria-labelledby="how-it-works">
         <h2 id="how-it-works">How it works</h2>
         <div class="process-grid">

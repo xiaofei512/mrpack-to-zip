@@ -3,6 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
@@ -42,18 +48,28 @@
             "step": [
               {
                 "@type": "HowToStep",
-                "name": "Choose source",
-                "text": "Upload a local .mrpack file, paste a direct .mrpack download URL, or enter a Modrinth project ID."
+                "name": "Choose your source",
+                "text": "Upload a local .mrpack file, paste a direct .mrpack URL, or enter a Modrinth project URL, slug, or ID."
               },
               {
                 "@type": "HowToStep",
-                "name": "Convert pack",
-                "text": "Build the recommended Launcher ZIP, or use Advanced to build a server-targeted ZIP when needed."
+                "name": "Keep Launcher ZIP selected",
+                "text": "Use the recommended Launcher ZIP for launcher imports and manual installs. Open Advanced only when you need a server-targeted ZIP."
               },
               {
                 "@type": "HowToStep",
-                "name": "Download ZIP",
-                "text": "Download the ZIP and review any missing file report shown after conversion."
+                "name": "Click Convert",
+                "text": "The browser reads the pack manifest, fetches listed files, checks supported hashes, and builds the ZIP locally."
+              },
+              {
+                "@type": "HowToStep",
+                "name": "Download the result",
+                "text": "Click Download ZIP when conversion finishes."
+              },
+              {
+                "@type": "HowToStep",
+                "name": "Review missing files if needed",
+                "text": "If files are missing, copy or download the missing file report and handle those files manually from the pack page."
               }
             ]
           },

@@ -79,6 +79,21 @@ describe('renderApp', () => {
     expect(getByText(root, 'What does hash checked mean?')).toBeTruthy()
   })
 
+  it('renders visible step-by-step instructions for first-time users', () => {
+    const root = document.createElement('div')
+    document.body.append(root)
+
+    renderApp(root)
+
+    expect(getByRole(root, 'heading', { level: 2, name: 'How to use this converter' })).toBeTruthy()
+    expect(getByText(root, 'Choose your source')).toBeTruthy()
+    expect(getByText(root, 'Keep Launcher ZIP selected')).toBeTruthy()
+    expect(getByText(root, 'Click Convert')).toBeTruthy()
+    expect(getByText(root, 'Download the result')).toBeTruthy()
+    expect(getByText(root, 'Review missing files if needed')).toBeTruthy()
+    expect(getByText(root, /If files are missing, copy or download the missing file report/i)).toBeTruthy()
+  })
+
   it('binds behavior to pre-rendered markup without replacing the static HTML', () => {
     const root = document.createElement('div')
     document.body.append(root)

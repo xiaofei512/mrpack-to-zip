@@ -14,6 +14,29 @@ function staticMarkupPlugin() {
 }
 
 describe('static SEO files', () => {
+  it('keeps visible conversion instructions aligned with HowTo structured data', () => {
+    const html = readFileSync('index.html', 'utf8')
+    const jsonLd = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1]
+
+    if (!jsonLd) {
+      throw new Error('Missing JSON-LD script.')
+    }
+
+    const graph = JSON.parse(jsonLd)['@graph']
+    const howTo = graph.find((entry: { '@type'?: string }) => entry['@type'] === 'HowTo')
+    expect(howTo).toBeTruthy()
+
+    const stepNames = howTo.step.map((step: { name: string }) => step.name)
+
+    expect(stepNames).toEqual([
+      'Choose your source',
+      'Keep Launcher ZIP selected',
+      'Click Convert',
+      'Download the result',
+      'Review missing files if needed',
+    ])
+  })
+
   it('does not rewrite every unknown route to the homepage with a 200 status', () => {
     const redirects = readFileSync('public/_redirects', 'utf8')
 
