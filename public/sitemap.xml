@@ -4,4 +4,16 @@
     <loc>https://mrpacktozip.net/</loc>
     <priority>1.0</priority>
   </url>
+  <url>
+    <loc>https://mrpacktozip.net/blog/</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://mrpacktozip.net/blog/launcher-zip-vs-server-zip/</loc>
+    <priority>0.8</priority>
+  </url>
 </urlset>

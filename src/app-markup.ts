@@ -1,5 +1,18 @@
 export function appMarkup() {
   return `
+    <header class="site-header">
+      <a class="site-brand" href="/" aria-label="MRPACK to ZIP homepage">
+        <span class="brand-mark" aria-hidden="true">↧</span>
+        <span>MRPACK to ZIP</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a aria-current="page" href="/">Converter</a>
+        <a href="/blog/">Blog</a>
+        <a href="/blog/how-to-convert-mrpack-to-zip/">How to convert</a>
+        <a href="/blog/launcher-zip-vs-server-zip/">ZIP outputs</a>
+      </nav>
+    </header>
+
     <main class="shell">
       <section class="hero-panel" aria-labelledby="page-title">
         <div class="hero-copy">
@@ -197,6 +210,29 @@ export function appMarkup() {
               </tr>
             </tbody>
           </table>
+        </div>
+      </section>
+
+      <section class="content-band guides-band" aria-labelledby="guides">
+        <h2 id="guides">MRPACK conversion guides</h2>
+        <p class="section-intro">Use these guides when you need the exact conversion steps or want to understand the Launcher ZIP and Server ZIP outputs before downloading.</p>
+        <div class="process-grid guide-links">
+          <article>
+            <strong><a href="/blog/how-to-convert-mrpack-to-zip/">How to convert MRPACK to ZIP</a></strong>
+            <p>Upload a local file, use a Modrinth project ID, or paste a direct .mrpack URL.</p>
+          </article>
+          <article>
+            <strong><a href="/blog/launcher-zip-vs-server-zip/">Launcher ZIP vs Server ZIP</a></strong>
+            <p>Choose the right output and learn why some converted ZIPs can look the same.</p>
+          </article>
+          <article>
+            <strong><a href="/blog/">All guides</a></strong>
+            <p>Browse the current MRPACK to ZIP guide library.</p>
+          </article>
+          <article>
+            <strong><a href="/">Open the converter</a></strong>
+            <p>Go back to the tool and build the ZIP in your browser.</p>
+          </article>
         </div>
       </section>
 

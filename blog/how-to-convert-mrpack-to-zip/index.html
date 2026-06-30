@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Learn how to convert a Modrinth .mrpack file to a launcher-ready ZIP using upload, direct URL, or project ID modes."
+    />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="How to Convert MRPACK to ZIP" />
+    <meta
+      property="og:description"
+      content="Step-by-step MRPACK to ZIP conversion guide for local files, Modrinth project IDs, and direct .mrpack URLs."
+    />
+    <meta property="og:url" content="https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/" />
+    <meta property="og:image" content="https://mrpacktozip.net/blog-assets/mrpack-upload-source.webp" />
+    <title>How to Convert MRPACK to ZIP - Browser-Based Modrinth Pack Guide</title>
+    <link rel="stylesheet" href="/src/blog.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Article",
+            "@id": "https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/#article",
+            "headline": "How to Convert MRPACK to ZIP",
+            "description": "Learn how to convert a Modrinth .mrpack file to a launcher-ready ZIP using upload, direct URL, or project ID modes.",
+            "image": "https://mrpacktozip.net/blog-assets/mrpack-upload-source.webp",
+            "datePublished": "2026-06-30",
+            "dateModified": "2026-06-30",
+            "author": {
+              "@type": "Organization",
+              "name": "MRPACK to ZIP"
+            },
+            "publisher": {
+              "@type": "Organization",
+              "name": "MRPACK to ZIP",
+              "url": "https://mrpacktozip.net/"
+            },
+            "mainEntityOfPage": "https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/"
+          },
+          {
+            "@type": "HowTo",
+            "@id": "https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/#howto",
+            "name": "How to convert MRPACK to ZIP",
+            "description": "Convert a Modrinth .mrpack file into a launcher-ready ZIP package in the browser.",
+            "tool": [
+              {
+                "@type": "HowToTool",
+                "name": "MRPACK to ZIP Converter"
+              }
+            ],
+            "step": [
+              {
+                "@type": "HowToStep",
+                "name": "Choose a source",
+                "text": "Upload a local .mrpack file, paste a direct .mrpack URL, or enter a Modrinth project ID, slug, or project page URL."
+              },
+              {
+                "@type": "HowToStep",
+                "name": "Use Launcher ZIP",
+                "text": "Keep the default Launcher ZIP output selected for launcher imports and manual client installs."
+              },
+              {
+                "@type": "HowToStep",
+                "name": "Convert the pack",
+                "text": "Start conversion so the browser can read the manifest, fetch the referenced files, verify supported hashes, and build the ZIP."
+              },
+              {
+                "@type": "HowToStep",
+                "name": "Download the ZIP",
+                "text": "Download the finished ZIP and review any missing file report if the conversion is partial."
+              }
+            ]
+          },
+          {
+            "@type": "BreadcrumbList",
+            "@id": "https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/#breadcrumbs",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "MRPACK to ZIP Converter",
+                "item": "https://mrpacktozip.net/"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Guides",
+                "item": "https://mrpacktozip.net/blog/"
+              },
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "name": "How to Convert MRPACK to ZIP",
+                "item": "https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/"
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+    <script>
+      const measurementId = '%VITE_GA_MEASUREMENT_ID%'
+      if (measurementId && !measurementId.startsWith('%')) {
+        const script = document.createElement('script')
+        script.async = true
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`
+        document.head.append(script)
+        window.dataLayer = window.dataLayer || []
+        function gtag() {
+          window.dataLayer.push(arguments)
+        }
+        window.gtag = gtag
+        gtag('js', new Date())
+        gtag('config', measurementId)
+      }
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/">MRPACK to ZIP</a>
+      <nav aria-label="Primary navigation">
+        <a href="/">Converter</a>
+        <a href="/blog/">Blog</a>
+        <a aria-current="page" href="/blog/how-to-convert-mrpack-to-zip/">How to convert</a>
+        <a href="/blog/launcher-zip-vs-server-zip/">ZIP outputs</a>
+      </nav>
+    </header>
+
+    <main class="article-shell">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Converter</a>
+        <span>/</span>
+        <a href="/blog/">Guides</a>
+      </nav>
+
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Conversion guide</p>
+          <h1>How to Convert MRPACK to ZIP</h1>
+          <p class="lede">
+            Use this guide when you have a Modrinth <code>.mrpack</code> file but need a normal
+            ZIP for launcher import, manual install, or another tool that expects ZIP packages.
+          </p>
+          <p class="post-meta">Published June 30, 2026</p>
+          <a class="button-link" href="/">Open the converter</a>
+        </header>
+
+        <section class="article-section" aria-labelledby="quick-answer">
+          <h2 id="quick-answer">Quick Answer</h2>
+          <p>
+            Open the <a href="/">MRPACK to ZIP Converter</a>, choose <strong>Upload File</strong>,
+            <strong>From URL</strong>, or <strong>Project ID</strong>, keep
+            <strong>Launcher ZIP</strong> selected, then click <strong>Convert file to ZIP</strong>.
+            The conversion runs in your browser and downloads a ZIP when it finishes.
+          </p>
+          <p class="note">
+            Local files are not uploaded. Remote URL and project modes still fetch remote files from
+            your browser, so some files can fail if their host blocks browser downloads.
+          </p>
+        </section>
+
+        <section class="article-section" aria-labelledby="upload-file">
+          <h2 id="upload-file">Option 1: Upload a Local MRPACK File</h2>
+          <p>
+            Choose <strong>Upload File</strong> when the <code>.mrpack</code> file is already on
+            your computer. This is the most direct path because the browser can read the pack
+            manifest immediately.
+          </p>
+          <figure>
+            <img
+              src="/blog-assets/mrpack-upload-source.webp"
+              alt="MRPACK to ZIP upload file mode with Launcher ZIP selected"
+              width="796"
+              height="725"
+              loading="eager"
+            />
+            <figcaption>Upload mode is best for a local <code>.mrpack</code> file.</figcaption>
+          </figure>
+          <ol>
+            <li>Select <strong>Upload File</strong>.</li>
+            <li>Drop your <code>.mrpack</code> file onto the upload area or click to browse.</li>
+            <li>Keep <strong>Launcher ZIP</strong> selected unless you specifically need server output.</li>
+            <li>Click <strong>Convert file to ZIP</strong>.</li>
+          </ol>
+        </section>
+
+        <section class="article-section" aria-labelledby="project-id">
+          <h2 id="project-id">Option 2: Use a Modrinth Project ID or Slug</h2>
+          <p>
+            Choose <strong>Project ID</strong> when you want the converter to find the latest usable
+            Modrinth pack file. You can paste a project page URL, a project ID, or a slug such as
+            <code>fabulously-optimized</code>.
+          </p>
+          <figure>
+            <img
+              src="/blog-assets/mrpack-project-id-source.webp"
+              alt="MRPACK to ZIP Project ID mode using the fabulously-optimized Modrinth slug"
+              width="796"
+              height="670"
+              loading="lazy"
+            />
+            <figcaption>Project ID mode accepts a Modrinth slug, ID, or project page URL.</figcaption>
+          </figure>
+          <p>
+            This is useful when you know the pack name but do not want to manually hunt for the
+            <code>.mrpack</code> download URL.
+          </p>
+        </section>
+
+        <section class="article-section" aria-labelledby="direct-url">
+          <h2 id="direct-url">Option 3: Paste a Direct MRPACK URL</h2>
+          <p>
+            Choose <strong>From URL</strong> if you already have a direct link that ends in, or
+            downloads as, a <code>.mrpack</code> file. A normal Modrinth project page is not always
+            a direct file URL, so use Project ID mode for project pages.
+          </p>
+        </section>
+
+        <section class="article-section" aria-labelledby="after-conversion">
+          <h2 id="after-conversion">After Conversion</h2>
+          <p>
+            When conversion succeeds, download the ZIP and import it into a launcher that accepts
+            ZIP packages, or use it as a manual install base. If the result is partial, read the
+            missing file report before assuming the pack is complete.
+          </p>
+          <ul>
+            <li><strong>Missing file:</strong> the browser could not download a referenced file.</li>
+            <li><strong>Hash mismatch:</strong> the downloaded file did not match the manifest hash.</li>
+            <li><strong>Blocked by CORS:</strong> the file host does not allow browser-based downloads.</li>
+          </ul>
+        </section>
+
+        <section class="article-section" aria-labelledby="next">
+          <h2 id="next">Next: Choose the Right ZIP Output</h2>
+          <p>
+            For most players, the default Launcher ZIP is the right choice. If you are preparing a
+            server, read <a href="/blog/launcher-zip-vs-server-zip/">Launcher ZIP vs Server ZIP</a>
+            before using the advanced Server ZIP option.
+          </p>
+        </section>
+      </article>
+    </main>
+  </body>
+</html>

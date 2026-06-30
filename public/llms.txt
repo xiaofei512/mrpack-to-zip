@@ -9,6 +9,11 @@ Sitemap: https://mrpacktozip.net/sitemap.xml
 
 - [MRPACK to ZIP Converter](https://mrpacktozip.net/): Convert local .mrpack files, direct .mrpack URLs, or Modrinth project IDs into launcher-ready ZIP packages.
 
+## Guides
+
+- [How to Convert MRPACK to ZIP](https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/): Step-by-step conversion guide for upload, direct URL, and Modrinth project ID workflows.
+- [Launcher ZIP vs Server ZIP](https://mrpacktozip.net/blog/launcher-zip-vs-server-zip/): Explains when to use the default launcher output and when the advanced server output is appropriate.
+
 ## What It Does
 
 - Reads `modrinth.index.json` from a `.mrpack` archive.

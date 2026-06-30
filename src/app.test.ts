@@ -48,6 +48,11 @@ describe('renderApp', () => {
     renderApp(root)
 
     expect(getByRole(root, 'heading', { level: 1, name: 'MRPACK to ZIP Converter' })).toBeTruthy()
+    expect(getByRole(root, 'navigation', { name: 'Primary navigation' })).toBeTruthy()
+    expect(getByRole(root, 'link', { name: 'Blog' }).getAttribute('href')).toBe('/blog/')
+    expect(getByRole(root, 'link', { name: 'How to convert' }).getAttribute('href')).toBe(
+      '/blog/how-to-convert-mrpack-to-zip/',
+    )
     expect((getByRole(root, 'radio', { name: 'Upload File' }) as HTMLInputElement).checked).toBe(
       true,
     )
@@ -75,6 +80,10 @@ describe('renderApp', () => {
     expect(getByText(root, 'Native .mrpack support')).toBeTruthy()
     expect(getByText(root, 'Prism Launcher')).toBeTruthy()
     expect(getByText(root, 'Official Minecraft Launcher')).toBeTruthy()
+    expect(getByRole(root, 'heading', { level: 2, name: 'MRPACK conversion guides' })).toBeTruthy()
+    expect(getByRole(root, 'link', { name: 'How to convert MRPACK to ZIP' }).getAttribute('href')).toBe(
+      '/blog/how-to-convert-mrpack-to-zip/',
+    )
     expect(getByText(root, 'Why is an MRPACK file not the same as a normal ZIP?')).toBeTruthy()
     expect(getByText(root, 'What does hash checked mean?')).toBeTruthy()
   })
