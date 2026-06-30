@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f7f3ea"/>
+  <path stroke="#d9d0c2" d="M0 70h1200M0 140h1200M0 210h1200M0 280h1200M0 350h1200M0 420h1200M0 490h1200M0 560h1200M100 0v630M200 0v630M300 0v630M400 0v630M500 0v630M600 0v630M700 0v630M800 0v630M900 0v630M1000 0v630M1100 0v630"/>
+  <rect x="80" y="80" width="1040" height="470" rx="18" fill="#fffdf7" stroke="#17181f" stroke-width="4"/>
+  <text x="125" y="210" fill="#17181f" font-family="Arial, sans-serif" font-size="86" font-weight="800">MRPACK to ZIP</text>
+  <text x="130" y="285" fill="#3e424d" font-family="Arial, sans-serif" font-size="34">Convert Modrinth packs in your browser</text>
+  <rect x="130" y="360" width="260" height="92" rx="10" fill="#e4efdc" stroke="#386f3c" stroke-width="3"/>
+  <text x="158" y="417" fill="#386f3c" font-family="Arial, sans-serif" font-size="30" font-weight="700">Client ZIP</text>
+  <rect x="430" y="360" width="260" height="92" rx="10" fill="#f1eadf" stroke="#858477" stroke-width="3"/>
+  <text x="458" y="417" fill="#17181f" font-family="Arial, sans-serif" font-size="30" font-weight="700">Server ZIP</text>
+  <rect x="730" y="360" width="300" height="92" rx="10" fill="#20222b"/>
+  <text x="758" y="417" fill="#d8ead4" font-family="monospace" font-size="28">hash checked</text>
+</svg>

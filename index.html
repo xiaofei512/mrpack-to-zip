@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Convert .mrpack files to ZIP in your browser. Upload a Modrinth pack, paste a .mrpack URL, or use a Modrinth project ID. No account, no file upload, no mod hosting."
+    />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="%VITE_PUBLIC_SITE_URL%/mrpack-to-zip" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="MRPACK to ZIP Converter" />
+    <meta
+      property="og:description"
+      content="Convert Modrinth .mrpack files into regular ZIP packages locally in your browser."
+    />
+    <meta property="og:url" content="%VITE_PUBLIC_SITE_URL%/mrpack-to-zip" />
+    <meta property="og:image" content="%VITE_PUBLIC_SITE_URL%/og.svg" />
+    <title>MRPACK to ZIP Converter - Convert Modrinth Packs in Your Browser</title>
+    <script>
+      const measurementId = '%VITE_GA_MEASUREMENT_ID%'
+      if (measurementId && !measurementId.startsWith('%')) {
+        const script = document.createElement('script')
+        script.async = true
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`
+        document.head.append(script)
+        window.dataLayer = window.dataLayer || []
+        function gtag() {
+          window.dataLayer.push(arguments)
+        }
+        window.gtag = gtag
+        gtag('js', new Date())
+        gtag('config', measurementId)
+      }
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
