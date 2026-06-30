@@ -7,6 +7,7 @@ import {
   Link,
   Monitor,
   Server,
+  Settings2,
   Upload,
   createIcons,
 } from 'lucide'
@@ -20,6 +21,7 @@ import {
 
 type AnalyticsParams = Record<string, string | number>
 type TrackEvent = (name: string, params: AnalyticsParams) => void
+type SourceMode = 'project' | 'url' | 'upload'
 
 export interface AppDependencies {
   convertMrpack?: typeof defaultConvertMrpack
@@ -48,27 +50,48 @@ export function renderApp(root: HTMLElement, dependencies: AppDependencies = {})
       Link,
       Monitor,
       Server,
+      Settings2,
       Upload,
     },
   })
 
   const form = query<HTMLFormElement>(root, '#converter-form')
+  const sourceInputs = [...root.querySelectorAll<HTMLInputElement>('input[name="source"]')]
+  const sourcePanels = [...root.querySelectorAll<HTMLElement>('[data-source-panel]')]
   const fileInput = query<HTMLInputElement>(root, '#mrpack-file')
   const urlInput = query<HTMLInputElement>(root, '#mrpack-url')
   const projectInput = query<HTMLInputElement>(root, '#project-id')
   const fileName = query<HTMLElement>(root, '#file-name')
+  const convertButton = query<HTMLButtonElement>(root, '#convert-button')
   const statusPanel = query<HTMLElement>(root, '#status-panel')
   const statusTitle = query<HTMLElement>(root, '#status-title')
   const statusBody = query<HTMLElement>(root, '#status-body')
   const progress = query<HTMLProgressElement>(root, '#progress')
   const resultActions = query<HTMLElement>(root, '#result-actions')
   const missingList = query<HTMLElement>(root, '#missing-list')
+  const warningList = query<HTMLElement>(root, '#warning-list')
   const downloadButton = query<HTMLButtonElement>(root, '#download-zip')
   const copyButton = query<HTMLButtonElement>(root, '#copy-missing')
   const reportButton = query<HTMLButtonElement>(root, '#download-report')
 
   let latestResult: ConversionResult | null = null
   let latestInputType: string = 'upload'
+
+  const syncSourceMode = () => {
+    const mode = selectedSource(root)
+
+    for (const panel of sourcePanels) {
+      panel.hidden = panel.dataset.sourcePanel !== mode
+    }
+
+    convertButton.innerHTML = `<span data-lucide="download" aria-hidden="true"></span>${convertButtonText(mode)}`
+    createIcons({ root: convertButton, icons: { Download } })
+  }
+
+  for (const input of sourceInputs) {
+    input.addEventListener('change', syncSourceMode)
+  }
+  syncSourceMode()
 
   fileInput.addEventListener('change', () => {
     fileName.textContent = fileInput.files?.[0]?.name ?? 'No file selected'
@@ -79,7 +102,7 @@ export function renderApp(root: HTMLElement, dependencies: AppDependencies = {})
     event.preventDefault()
 
     const target = selectedTarget(root)
-    const input = selectedInput(fileInput, urlInput, projectInput)
+    const input = selectedInput(selectedSource(root), fileInput, urlInput, projectInput)
     latestInputType = input.type
 
     if (!input.value) {
@@ -90,6 +113,7 @@ export function renderApp(root: HTMLElement, dependencies: AppDependencies = {})
     latestResult = null
     resultActions.hidden = true
     missingList.innerHTML = ''
+    warningList.innerHTML = ''
     showStatus(statusPanel, statusTitle, statusBody, 'Converting pack', 'Reading the manifest.', 'busy')
     progress.hidden = false
     progress.value = 0
@@ -189,55 +213,94 @@ function appTemplate() {
         <div class="hero-copy">
           <p class="eyebrow">Client-side Modrinth pack utility</p>
           <h1 id="page-title">MRPACK to ZIP Converter</h1>
-          <p class="lede">Convert Modrinth .mrpack files into regular ZIP packages in your browser. Upload a file, paste a direct .mrpack URL, or use a Modrinth project ID.</p>
+          <p class="lede">Convert Modrinth .mrpack files into launcher-ready ZIP packages in your browser. Upload a local file, paste a direct URL, or start from a Modrinth project ID.</p>
           <div class="trust-strip" aria-label="Tool boundaries">
-            <span>No account</span>
-            <span>No file upload</span>
-            <span>No mod hosting</span>
+            <span>Launcher ZIP ready</span>
+            <span>Processed in browser</span>
+            <span>Hash checked</span>
+            <span>Missing report</span>
           </div>
         </div>
 
         <form id="converter-form" class="tool-panel">
-          <div class="mode-grid" aria-label="Output target">
-            <label class="mode-card">
-              <input type="radio" name="target" value="client" aria-label="Client ZIP" checked>
-              <span data-lucide="monitor" aria-hidden="true"></span>
-              <strong>Client ZIP</strong>
-              <small>Includes client files and client-overrides.</small>
-            </label>
-            <label class="mode-card">
-              <input type="radio" name="target" value="server" aria-label="Server ZIP">
-              <span data-lucide="server" aria-hidden="true"></span>
-              <strong>Server ZIP</strong>
-              <small>Includes server files and server-overrides.</small>
-            </label>
-          </div>
+          <section class="tool-section" aria-labelledby="source-heading">
+            <h2 id="source-heading">Choose source</h2>
+            <div class="source-grid" aria-label="Source type">
+              <label class="mode-card source-card">
+                <input type="radio" name="source" value="project" aria-label="Project ID">
+                <span data-lucide="file-archive" aria-hidden="true"></span>
+                <strong>Project ID</strong>
+                <small>From Modrinth</small>
+              </label>
+              <label class="mode-card source-card">
+                <input type="radio" name="source" value="url" aria-label="From URL">
+                <span data-lucide="link" aria-hidden="true"></span>
+                <strong>From URL</strong>
+                <small>Paste download link</small>
+              </label>
+              <label class="mode-card source-card">
+                <input type="radio" name="source" value="upload" aria-label="Upload File" checked>
+                <span data-lucide="upload" aria-hidden="true"></span>
+                <strong>Upload File</strong>
+                <small>Local .mrpack</small>
+              </label>
+            </div>
+          </section>
 
           <div class="input-stack">
-            <label class="field-block" for="mrpack-file">
-              <span class="field-label"><i data-lucide="upload" aria-hidden="true"></i>Upload .mrpack file</span>
+            <section class="field-block" data-source-panel="project" hidden>
+              <label class="field-label" for="project-id"><i data-lucide="file-archive" aria-hidden="true"></i>Modrinth project ID, slug, or URL</label>
+              <input id="project-id" type="text" autocomplete="off" aria-label="Modrinth project ID, slug, or URL" placeholder="fabulously-optimized or https://modrinth.com/modpack/...">
+              <small>Use a Modrinth project page URL, project slug, or project ID.</small>
+            </section>
+            <section class="field-block" data-source-panel="url" hidden>
+              <label class="field-label" for="mrpack-url"><i data-lucide="link" aria-hidden="true"></i>Direct .mrpack download URL</label>
+              <input id="mrpack-url" type="url" inputmode="url" aria-label="Paste .mrpack download URL" placeholder="https://cdn.modrinth.com/.../pack.mrpack">
+              <small>Paste a URL that points directly to a .mrpack file.</small>
+            </section>
+            <section class="field-block upload-dropzone" data-source-panel="upload">
+              <label class="field-label" for="mrpack-file"><i data-lucide="upload" aria-hidden="true"></i>Local .mrpack file</label>
               <span class="file-picker">
                 <input id="mrpack-file" class="file-input-native" type="file" accept=".mrpack" aria-label="Upload .mrpack file">
-                <span class="file-picker-button">Choose .mrpack</span>
+                <span class="file-picker-button">
+                  <span data-lucide="upload" aria-hidden="true"></span>
+                  <strong>Drop your .mrpack file here</strong>
+                  <small>or click to browse files</small>
+                </span>
               </span>
               <small id="file-name">No file selected</small>
-            </label>
-            <label class="field-block" for="mrpack-url">
-              <span class="field-label"><i data-lucide="link" aria-hidden="true"></i>Paste .mrpack download URL</span>
-              <input id="mrpack-url" type="url" inputmode="url" aria-label="Paste .mrpack download URL" placeholder="https://cdn.modrinth.com/.../pack.mrpack">
-            </label>
-            <label class="field-block" for="project-id">
-              <span class="field-label"><i data-lucide="file-archive" aria-hidden="true"></i>Modrinth project ID, slug, or URL</span>
-              <input id="project-id" type="text" autocomplete="off" aria-label="Modrinth project ID, slug, or URL" placeholder="fabulously-optimized or https://modrinth.com/modpack/...">
-            </label>
+            </section>
           </div>
 
-          <button class="primary-action" type="submit"><span data-lucide="download" aria-hidden="true"></span>Convert to ZIP</button>
+          <section class="tool-section package-section" aria-labelledby="package-heading">
+            <h2 id="package-heading">Package type</h2>
+            <div class="default-package">
+              <span data-lucide="monitor" aria-hidden="true"></span>
+              <div>
+                <strong>Launcher ZIP <span>(recommended)</span></strong>
+                <small>For launcher imports and manual installs.</small>
+              </div>
+            </div>
+            <details class="advanced-options">
+              <summary><span data-lucide="settings-2" aria-hidden="true"></span>Advanced</summary>
+              <label class="server-toggle">
+                <input type="checkbox" name="target" value="server" aria-label="Build a Server ZIP instead">
+                <span data-lucide="server" aria-hidden="true"></span>
+                <span>
+                  <strong>Build a Server ZIP instead</strong>
+                  <small>Uses server-compatible files when the pack marks them. Not a one-click server setup.</small>
+                </span>
+              </label>
+            </details>
+          </section>
+
+          <button id="convert-button" class="primary-action" type="submit"><span data-lucide="download" aria-hidden="true"></span>Convert file to ZIP</button>
 
           <section id="status-panel" class="status-panel" data-state="idle" aria-live="polite">
             <h2 id="status-title">Ready</h2>
-            <p id="status-body">Local files stay in your browser. Remote URLs are fetched directly by your browser.</p>
+            <p id="status-body">Local files are processed in your browser. Remote URLs are fetched directly by your browser.</p>
             <progress id="progress" value="0" max="1" hidden></progress>
+            <ul id="warning-list" class="warning-list"></ul>
             <ul id="missing-list" class="missing-list"></ul>
             <div id="result-actions" class="result-actions" hidden>
               <button id="download-zip" type="button"><span data-lucide="download" aria-hidden="true"></span>Download ZIP</button>
@@ -258,78 +321,141 @@ function appTemplate() {
         </div>
       </section>
 
-      <section class="content-band split-band">
-        <div>
-          <h2>Supported inputs</h2>
-          <ul class="plain-list">
-            <li>Local .mrpack files</li>
-            <li>Direct .mrpack download URLs</li>
-            <li>Modrinth project IDs, slugs, and project URLs</li>
-          </ul>
-        </div>
-        <div>
-          <h2>Common issues</h2>
-          <ul class="plain-list">
-            <li>Some third-party hosts block browser downloads with CORS.</li>
-            <li>Large packs can take time and memory.</li>
-            <li>A format ZIP is not a guarantee that a pack is server-compatible.</li>
-          </ul>
+      <section class="content-band launcher-band" aria-labelledby="launcher-support">
+        <h2 id="launcher-support">Which launchers need ZIP?</h2>
+        <p class="section-intro">Not every Minecraft launcher opens Modrinth .mrpack files directly. Use this table as a practical guide, and check your launcher version when behavior varies.</p>
+        <div class="table-wrap">
+          <table class="launcher-table">
+            <thead>
+              <tr>
+                <th>Launcher</th>
+                <th>Native .mrpack support</th>
+                <th>ZIP often needed</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Prism Launcher</td>
+                <td>Yes</td>
+                <td>No</td>
+                <td>Usually imports Modrinth packs directly.</td>
+              </tr>
+              <tr>
+                <td>MultiMC</td>
+                <td>Yes</td>
+                <td>No</td>
+                <td>Modrinth packs are supported by current builds.</td>
+              </tr>
+              <tr>
+                <td>ATLauncher</td>
+                <td>Yes</td>
+                <td>No</td>
+                <td>Listed by Modrinth as a compatible launcher.</td>
+              </tr>
+              <tr>
+                <td>GDLauncher</td>
+                <td>Yes</td>
+                <td>No</td>
+                <td>Can import Modrinth .mrpack packs.</td>
+              </tr>
+              <tr>
+                <td>CurseForge</td>
+                <td>Varies</td>
+                <td>Sometimes</td>
+                <td>Import behavior depends on pack format and launcher version.</td>
+              </tr>
+              <tr>
+                <td>Official Minecraft Launcher</td>
+                <td>No pack import</td>
+                <td>Yes</td>
+                <td>Use ZIP files for manual installs or external tooling.</td>
+              </tr>
+              <tr>
+                <td>Technic</td>
+                <td>No</td>
+                <td>Yes</td>
+                <td>ZIP-style pack files are commonly used.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
       <section class="content-band faq-band" aria-labelledby="faq">
         <h2 id="faq">FAQ</h2>
         <details open><summary>What is an MRPACK file?</summary><p>An MRPACK file is a ZIP-based Modrinth modpack manifest with override folders and download instructions.</p></details>
-        <details><summary>How do I convert MRPACK to ZIP?</summary><p>Choose a local file, paste a direct .mrpack URL, or enter a Modrinth project. Then choose Client ZIP or Server ZIP and convert.</p></details>
+        <details><summary>How do I convert MRPACK to ZIP?</summary><p>Choose a local file, paste a direct .mrpack URL, or enter a Modrinth project. Then convert the launcher ZIP, or use Advanced to build a server-targeted ZIP.</p></details>
+        <details><summary>Why is an MRPACK file not the same as a normal ZIP?</summary><p>An .mrpack file usually stores a manifest and override folders, while many mod files are referenced by download URLs and hashes. This tool rebuilds a regular ZIP by reading that manifest and fetching the referenced files.</p></details>
+        <details><summary>What is a Launcher ZIP?</summary><p>A Launcher ZIP is the default output for launcher imports and manual installs. It includes files that the pack marks as usable on the client side.</p></details>
+        <details><summary>What is a Server ZIP?</summary><p>A Server ZIP is an advanced output that uses server-compatible files when the pack marks them. It is not a one-click server setup and may still need manual server configuration.</p></details>
         <details><summary>Is my MRPACK file uploaded?</summary><p>No. Local files are processed inside your browser. Remote URL and project modes fetch remote files directly from your browser.</p></details>
         <details><summary>Why are some mods missing from the ZIP?</summary><p>Some files may be hosted outside Modrinth or blocked by CORS. Missing files are listed so you can handle them manually.</p></details>
+        <details><summary>What does hash checked mean?</summary><p>When the manifest provides a supported hash, the downloaded file is checked against it. A mismatch is reported instead of silently adding the wrong file.</p></details>
         <details><summary>Is this an official Modrinth tool?</summary><p>No. This is an independent tool and is not affiliated with Modrinth, Mojang, Microsoft, Minecraft, or pack authors.</p></details>
       </section>
     </main>
   `
 }
 
+function selectedSource(root: HTMLElement): SourceMode {
+  const selected = query<HTMLInputElement>(root, 'input[name="source"]:checked')
+
+  if (selected.value === 'project' || selected.value === 'url') {
+    return selected.value
+  }
+
+  return 'upload'
+}
+
+function convertButtonText(mode: SourceMode) {
+  if (mode === 'project') {
+    return 'Find and convert pack'
+  }
+  if (mode === 'url') {
+    return 'Convert URL to ZIP'
+  }
+  return 'Convert file to ZIP'
+}
+
 function selectedInput(
+  sourceMode: SourceMode,
   fileInput: HTMLInputElement,
   urlInput: HTMLInputElement,
   projectInput: HTMLInputElement,
 ): { type: 'upload' | 'url' | 'project'; value: MrpackInput | null; message: string } {
-  const file = fileInput.files?.[0]
+  if (sourceMode === 'upload') {
+    const file = fileInput.files?.[0]
 
-  if (file) {
     return {
       type: 'upload',
-      value: { kind: 'archive', data: file, sourceName: file.name },
-      message: 'Choose a .mrpack file, paste a direct URL, or enter a Modrinth project.',
+      value: file ? { kind: 'archive', data: file, sourceName: file.name } : null,
+      message: 'Choose a local .mrpack file.',
     }
   }
 
-  if (urlInput.value.trim()) {
+  if (sourceMode === 'url') {
+    const url = urlInput.value.trim()
+
     return {
       type: 'url',
-      value: { kind: 'url', url: urlInput.value.trim() },
+      value: url ? { kind: 'url', url } : null,
       message: 'Paste a direct .mrpack download URL.',
     }
   }
 
-  if (projectInput.value.trim()) {
-    return {
-      type: 'project',
-      value: { kind: 'project', projectIdOrSlugOrUrl: projectInput.value.trim() },
-      message: 'Enter a Modrinth project ID, slug, or URL.',
-    }
-  }
+  const project = projectInput.value.trim()
 
   return {
-    type: 'upload',
-    value: null,
-    message: 'Choose a .mrpack file, paste a direct URL, or enter a Modrinth project.',
+    type: 'project',
+    value: project ? { kind: 'project', projectIdOrSlugOrUrl: project } : null,
+    message: 'Enter a Modrinth project ID, slug, or URL.',
   }
 }
 
 function selectedTarget(root: HTMLElement): ConversionTarget {
-  const selected = query<HTMLInputElement>(root, 'input[name="target"]:checked')
-  return selected.value === 'server' ? 'server' : 'client'
+  const selected = root.querySelector<HTMLInputElement>('input[name="target"]:checked')
+  return selected?.value === 'server' ? 'server' : 'client'
 }
 
 function renderResult(root: HTMLElement, result: ConversionResult) {
@@ -338,6 +464,7 @@ function renderResult(root: HTMLElement, result: ConversionResult) {
   const statusBody = query<HTMLElement>(root, '#status-body')
   const progress = query<HTMLProgressElement>(root, '#progress')
   const missingList = query<HTMLElement>(root, '#missing-list')
+  const warningList = query<HTMLElement>(root, '#warning-list')
   const resultActions = query<HTMLElement>(root, '#result-actions')
 
   progress.hidden = true
@@ -356,13 +483,53 @@ function renderResult(root: HTMLElement, result: ConversionResult) {
     statusTitle,
     statusBody,
     title,
-    `${result.filesDownloaded}/${result.filesTotal} manifest files downloaded for the ${result.target} package.`,
+    resultStatusMessage(result),
     state,
   )
 
-  missingList.innerHTML = result.missingFiles
-    .map((file) => `<li><strong>${escapeHtml(file.path)}</strong><span>${escapeHtml(file.reason)}</span></li>`)
+  warningList.innerHTML = result.warnings
+    .map((warning) => `<li><strong>Warning</strong><span>${escapeHtml(warning)}</span></li>`)
     .join('')
+
+  missingList.innerHTML = result.missingFiles
+    .map(
+      (file) => `
+        <li>
+          <strong>${escapeHtml(file.path)}</strong>
+          <span>${escapeHtml(file.reason)}</span>
+          <p>${escapeHtml(file.message)} ${escapeHtml(missingFileHint(file.reason))}</p>
+        </li>
+      `,
+    )
+    .join('')
+}
+
+function resultStatusMessage(result: ConversionResult) {
+  const packageLabel = result.target === 'server' ? 'Server ZIP' : 'Launcher ZIP'
+  const base = `${result.filesDownloaded}/${result.filesTotal} manifest files downloaded for the ${packageLabel} package.`
+
+  if (result.status === 'partial') {
+    return `${base} Review the missing file list, then download the partial ZIP or copy the report.`
+  }
+
+  if (result.status === 'failed') {
+    return `${base} No complete ZIP could be created.`
+  }
+
+  return base
+}
+
+function missingFileHint(reason: string) {
+  if (reason === 'hash_mismatch') {
+    return 'Verify the source before using this file.'
+  }
+  if (reason === 'invalid_response') {
+    return 'Try again later or download it manually from the pack page.'
+  }
+  if (reason === 'unsafe_path') {
+    return 'The path was skipped because it is not safe to write into a ZIP.'
+  }
+  return 'Try the pack page or download this mod manually.'
 }
 
 function showStatus(

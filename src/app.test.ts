@@ -26,31 +26,60 @@ function result(overrides: Partial<ConversionResult> = {}): ConversionResult {
   }
 }
 
+function sourcePanel(root: HTMLElement, source: 'project' | 'url' | 'upload') {
+  const panel = root.querySelector<HTMLElement>(`[data-source-panel="${source}"]`)
+
+  if (!panel) {
+    throw new Error(`Missing source panel: ${source}`)
+  }
+
+  return panel
+}
+
 describe('renderApp', () => {
   beforeEach(() => {
     document.body.innerHTML = ''
   })
 
-  it('renders the MRPACK conversion controls, FAQ, and independent disclaimer', () => {
+  it('renders source cards, launcher default copy, FAQ, and independent disclaimer', () => {
     const root = document.createElement('div')
     document.body.append(root)
 
     renderApp(root)
 
     expect(getByRole(root, 'heading', { level: 1, name: 'MRPACK to ZIP Converter' })).toBeTruthy()
-    expect(getByLabelText(root, 'Upload .mrpack file')).toBeTruthy()
-    expect(getByLabelText(root, 'Paste .mrpack download URL')).toBeTruthy()
-    expect(getByLabelText(root, 'Modrinth project ID, slug, or URL')).toBeTruthy()
-    expect((getByRole(root, 'radio', { name: 'Client ZIP' }) as HTMLInputElement).checked).toBe(
+    expect((getByRole(root, 'radio', { name: 'Upload File' }) as HTMLInputElement).checked).toBe(
       true,
     )
-    expect(getByRole(root, 'radio', { name: 'Server ZIP' })).toBeTruthy()
-    expect(getByRole(root, 'button', { name: /Convert to ZIP/i })).toBeTruthy()
+    expect(getByRole(root, 'radio', { name: 'Project ID' })).toBeTruthy()
+    expect(getByRole(root, 'radio', { name: 'From URL' })).toBeTruthy()
+    expect(getByText(root, 'Launcher ZIP ready')).toBeTruthy()
+    expect(getByText(root, 'Processed in browser')).toBeTruthy()
+    expect(getByText(root, 'Launcher ZIP')).toBeTruthy()
+    expect(getByLabelText(root, 'Build a Server ZIP instead')).toBeTruthy()
+    expect(getByRole(root, 'button', { name: /Convert file to ZIP/i })).toBeTruthy()
+    expect(sourcePanel(root, 'upload').hidden).toBe(false)
+    expect(sourcePanel(root, 'project').hidden).toBe(true)
+    expect(sourcePanel(root, 'url').hidden).toBe(true)
     expect(getByText(root, 'Why are some mods missing from the ZIP?')).toBeTruthy()
     expect(getByText(root, /not affiliated with Modrinth/i)).toBeTruthy()
   })
 
-  it('runs project conversions and tracks only aggregate analytics fields', async () => {
+  it('renders launcher guidance and expanded FAQ topics', () => {
+    const root = document.createElement('div')
+    document.body.append(root)
+
+    renderApp(root)
+
+    expect(getByRole(root, 'heading', { level: 2, name: 'Which launchers need ZIP?' })).toBeTruthy()
+    expect(getByText(root, 'Native .mrpack support')).toBeTruthy()
+    expect(getByText(root, 'Prism Launcher')).toBeTruthy()
+    expect(getByText(root, 'Official Minecraft Launcher')).toBeTruthy()
+    expect(getByText(root, 'Why is an MRPACK file not the same as a normal ZIP?')).toBeTruthy()
+    expect(getByText(root, 'What does hash checked mean?')).toBeTruthy()
+  })
+
+  it('submits only the active source and defaults to launcher target', async () => {
     const root = document.createElement('div')
     document.body.append(root)
     const convertMrpack = vi.fn(async () => result())
@@ -58,15 +87,78 @@ describe('renderApp', () => {
 
     renderApp(root, { convertMrpack, trackEvent })
 
-    const projectInput = getByLabelText(root, 'Modrinth project ID, slug, or URL') as HTMLInputElement
-    fireEvent.input(projectInput, {
+    fireEvent.input(getByLabelText(root, 'Modrinth project ID, slug, or URL'), {
       target: { value: 'https://modrinth.com/modpack/fabulously-optimized' },
     })
-    fireEvent.click(getByRole(root, 'button', { name: /Convert to ZIP/i }))
+    fireEvent.input(getByLabelText(root, 'Paste .mrpack download URL'), {
+      target: { value: 'https://cdn.example/hidden.mrpack' },
+    })
+
+    const fileInput = getByLabelText(root, 'Upload .mrpack file') as HTMLInputElement
+    const file = new File(['fixture'], 'fixture.mrpack', { type: 'application/octet-stream' })
+    fireEvent.change(fileInput, { target: { files: [file] } })
+    fireEvent.click(getByRole(root, 'button', { name: /Convert file to ZIP/i }))
 
     await waitFor(() => expect(convertMrpack).toHaveBeenCalled())
     await waitFor(() => expect(getByText(root, 'Partial ZIP ready')).toBeTruthy())
 
+    expect(convertMrpack).toHaveBeenCalledWith(
+      { kind: 'archive', data: file, sourceName: 'fixture.mrpack' },
+      expect.objectContaining({ target: 'client' }),
+    )
+    expect(trackEvent).toHaveBeenCalledWith('upload_submitted', {
+      input_type: 'upload',
+      target: 'client',
+    })
+  })
+
+  it('shows warnings and actionable missing file guidance after partial conversion', async () => {
+    const root = document.createElement('div')
+    document.body.append(root)
+    const convertMrpack = vi.fn(async () =>
+      result({
+        warnings: ['No release version with a .mrpack file was found; using the latest available version instead.'],
+      }),
+    )
+
+    renderApp(root, { convertMrpack })
+
+    const fileInput = getByLabelText(root, 'Upload .mrpack file') as HTMLInputElement
+    const file = new File(['fixture'], 'fixture.mrpack', { type: 'application/octet-stream' })
+    fireEvent.change(fileInput, { target: { files: [file] } })
+    fireEvent.click(getByRole(root, 'button', { name: /Convert file to ZIP/i }))
+
+    await waitFor(() => expect(getByText(root, 'Partial ZIP ready')).toBeTruthy())
+
+    expect(getByText(root, 'Warning')).toBeTruthy()
+    expect(getByText(root, /using the latest available version instead/i)).toBeTruthy()
+    expect(getByText(root, /download this mod manually/i)).toBeTruthy()
+    expect(getByText(root, /Launcher ZIP package/i)).toBeTruthy()
+    expect(getByText(root, /download the partial ZIP or copy the report/i)).toBeTruthy()
+  })
+
+  it('switches source panels and submits project input without leaking hidden values', async () => {
+    const root = document.createElement('div')
+    document.body.append(root)
+    const convertMrpack = vi.fn(async () => result())
+    const trackEvent = vi.fn()
+
+    renderApp(root, { convertMrpack, trackEvent })
+
+    fireEvent.input(getByLabelText(root, 'Paste .mrpack download URL'), {
+      target: { value: 'https://cdn.example/hidden.mrpack' },
+    })
+    fireEvent.click(getByRole(root, 'radio', { name: 'Project ID' }))
+    fireEvent.input(getByLabelText(root, 'Modrinth project ID, slug, or URL'), {
+      target: { value: 'https://modrinth.com/modpack/fabulously-optimized' },
+    })
+    fireEvent.click(getByRole(root, 'button', { name: /Find and convert pack/i }))
+
+    await waitFor(() => expect(convertMrpack).toHaveBeenCalled())
+
+    expect(sourcePanel(root, 'project').hidden).toBe(false)
+    expect(sourcePanel(root, 'url').hidden).toBe(true)
+    expect(sourcePanel(root, 'upload').hidden).toBe(true)
     expect(convertMrpack).toHaveBeenCalledWith(
       {
         kind: 'project',
@@ -86,5 +178,28 @@ describe('renderApp', () => {
       file_count_bucket: '1-10',
     })
     expect(JSON.stringify(trackEvent.mock.calls)).not.toContain('fabulously-optimized')
+  })
+
+  it('submits URL input and maps advanced Server ZIP to server target', async () => {
+    const root = document.createElement('div')
+    document.body.append(root)
+    const convertMrpack = vi.fn(async () => result({ target: 'server' }))
+
+    renderApp(root, { convertMrpack })
+
+    fireEvent.click(getByRole(root, 'radio', { name: 'From URL' }))
+    fireEvent.input(getByLabelText(root, 'Paste .mrpack download URL'), {
+      target: { value: 'https://cdn.example/pack.mrpack' },
+    })
+    fireEvent.click(getByLabelText(root, 'Build a Server ZIP instead'))
+    fireEvent.click(getByRole(root, 'button', { name: /Convert URL to ZIP/i }))
+
+    await waitFor(() => expect(convertMrpack).toHaveBeenCalled())
+
+    expect(convertMrpack).toHaveBeenCalledWith(
+      { kind: 'url', url: 'https://cdn.example/pack.mrpack' },
+      expect.objectContaining({ target: 'server' }),
+    )
+    expect(getByText(root, /Server ZIP package/i)).toBeTruthy()
   })
 })
