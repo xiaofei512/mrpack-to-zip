@@ -7,7 +7,7 @@ export function appMarkup() {
       </a>
       <nav class="site-nav" aria-label="Primary navigation">
         <a aria-current="page" href="/">Converter</a>
-        <a href="/blog/">Blog</a>
+        <a href="/blog/">Guides</a>
         <a href="/blog/how-to-convert-mrpack-to-zip/">How to convert</a>
         <a href="/blog/launcher-zip-vs-server-zip/">ZIP outputs</a>
       </nav>

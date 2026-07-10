@@ -49,7 +49,7 @@ describe('renderApp', () => {
 
     expect(getByRole(root, 'heading', { level: 1, name: 'MRPACK to ZIP Converter' })).toBeTruthy()
     expect(getByRole(root, 'navigation', { name: 'Primary navigation' })).toBeTruthy()
-    expect(getByRole(root, 'link', { name: 'Blog' }).getAttribute('href')).toBe('/blog/')
+    expect(getByRole(root, 'link', { name: 'Guides' }).getAttribute('href')).toBe('/blog/')
     expect(getByRole(root, 'link', { name: 'How to convert' }).getAttribute('href')).toBe(
       '/blog/how-to-convert-mrpack-to-zip/',
     )
