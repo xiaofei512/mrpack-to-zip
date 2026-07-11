@@ -8,7 +8,7 @@ export function appMarkup() {
       <nav class="site-nav" aria-label="Primary navigation">
         <a aria-current="page" href="/">Converter</a>
         <a href="/blog/">Guides</a>
-        <a href="/blog/how-to-convert-mrpack-to-zip/">How to convert</a>
+        <a href="/blog/how-to-convert-mrpack-to-zip/">Troubleshooting</a>
         <a href="/blog/launcher-zip-vs-server-zip/">ZIP outputs</a>
       </nav>
     </header>
@@ -215,11 +215,11 @@ export function appMarkup() {
 
       <section class="content-band guides-band" aria-labelledby="guides">
         <h2 id="guides">MRPACK conversion guides</h2>
-        <p class="section-intro">Use these guides when you need the exact conversion steps or want to understand the Launcher ZIP and Server ZIP outputs before downloading.</p>
+        <p class="section-intro">Use these guides when a conversion is partial, a file fails validation, or you need to choose between Launcher ZIP and Server ZIP.</p>
         <div class="process-grid guide-links">
           <article>
-            <strong><a href="/blog/how-to-convert-mrpack-to-zip/">How to convert MRPACK to ZIP</a></strong>
-            <p>Upload a local file, use a Modrinth project ID, or paste a direct .mrpack URL.</p>
+            <strong><a href="/blog/how-to-convert-mrpack-to-zip/">MRPACK conversion troubleshooting</a></strong>
+            <p>Diagnose missing files, CORS failures, invalid responses, unsafe paths, and hash mismatches.</p>
           </article>
           <article>
             <strong><a href="/blog/launcher-zip-vs-server-zip/">Launcher ZIP vs Server ZIP</a></strong>

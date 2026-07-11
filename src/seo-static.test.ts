@@ -122,7 +122,7 @@ describe('static SEO files', () => {
       {
         path: 'blog/how-to-convert-mrpack-to-zip/index.html',
         canonical: 'https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/',
-        title: 'How to Convert MRPACK to ZIP',
+        title: 'MRPACK Conversion Errors: Missing Files, CORS, and Hashes',
         schemaTypes: ['Article', 'HowTo', 'BreadcrumbList'],
         requiredLinks: ['/', '/blog/', '/blog/launcher-zip-vs-server-zip/'],
       },
@@ -156,6 +156,27 @@ describe('static SEO files', () => {
         expect(html).toContain(`href="${requiredLink}"`)
       }
     }
+  })
+
+  it('keeps the troubleshooting guide distinct from the converter intent', () => {
+    const html = readFileSync('blog/how-to-convert-mrpack-to-zip/index.html', 'utf8')
+    const graph = jsonLdGraph(html)
+    const article = graph.find((entry: { '@type'?: string }) => entry['@type'] === 'Article')
+    const howTo = graph.find((entry: { '@type'?: string }) => entry['@type'] === 'HowTo')
+
+    expect(html).toContain('<h1>MRPACK Conversion Errors: Missing Files, CORS, and Hashes</h1>')
+    expect(html).not.toContain('<h1>How to Convert MRPACK to ZIP</h1>')
+    expect(html).toContain('<code>download_failed</code>')
+    expect(html).toContain('<code>invalid_response</code>')
+    expect(html).toContain('<code>hash_mismatch</code>')
+    expect(html).toContain('<code>unsafe_path</code>')
+    expect(html).toContain('aria-labelledby="on-this-page"')
+    expect(html).toContain('href="#quick-diagnosis"')
+    expect(html).toContain('href="#recover-partial"')
+    expect(html).toContain('https://support.modrinth.com/en/articles/8802351-modrinth-modpack-format-mrpack')
+    expect(html).toContain('https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS')
+    expect(article?.dateModified).toBe('2026-07-11')
+    expect(howTo?.name).toBe('How to troubleshoot MRPACK conversion errors')
   })
 
   it('keeps blog screenshot assets available and lightweight', () => {
