@@ -14,6 +14,11 @@ Sitemap: https://mrpacktozip.net/sitemap.xml
 - [MRPACK Conversion Troubleshooting](https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/): Diagnose missing files, CORS failures, invalid responses, unsafe paths, and hash mismatches from a partial conversion report.
 - [Launcher ZIP vs Server ZIP](https://mrpacktozip.net/blog/launcher-zip-vs-server-zip/): Explains when to use the default launcher output and when the advanced server output is appropriate.
 
+## Trust and Policies
+
+- [About](https://mrpacktozip.net/about/): Identifies the maintainer, documents project boundaries, and publishes a dated real-pack conversion test.
+- [Privacy](https://mrpacktozip.net/privacy/): Explains local processing, remote browser requests, Google Analytics events, and storage boundaries.
+
 ## What It Does
 
 - Reads `modrinth.index.json` from a `.mrpack` archive.

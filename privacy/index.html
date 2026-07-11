@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Read how MRPACK to ZIP handles local files, remote browser requests, conversion analytics, cookies, storage, and third-party services."
+    />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://mrpacktozip.net/privacy/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="MRPACK to ZIP Privacy" />
+    <meta
+      property="og:description"
+      content="Local file processing, remote request, analytics, cookie, and storage boundaries for MRPACK to ZIP."
+    />
+    <meta property="og:url" content="https://mrpacktozip.net/privacy/" />
+    <meta property="og:image" content="https://mrpacktozip.net/og.svg" />
+    <title>MRPACK to ZIP Privacy - Files, Remote Requests, and Analytics</title>
+    <link rel="stylesheet" href="/src/blog.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebPage",
+            "@id": "https://mrpacktozip.net/privacy/#page",
+            "name": "MRPACK to ZIP Privacy",
+            "url": "https://mrpacktozip.net/privacy/",
+            "description": "Local file processing, remote browser request, analytics, cookie, and storage boundaries for MRPACK to ZIP.",
+            "about": {
+              "@id": "https://mrpacktozip.net/#organization"
+            },
+            "isPartOf": {
+              "@id": "https://mrpacktozip.net/#website"
+            },
+            "dateModified": "2026-07-11"
+          },
+          {
+            "@type": "BreadcrumbList",
+            "@id": "https://mrpacktozip.net/privacy/#breadcrumbs",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "MRPACK to ZIP Converter",
+                "item": "https://mrpacktozip.net/"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Privacy",
+                "item": "https://mrpacktozip.net/privacy/"
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+    <script>
+      const measurementId = '%VITE_GA_MEASUREMENT_ID%'
+      if (measurementId && !measurementId.startsWith('%')) {
+        const script = document.createElement('script')
+        script.async = true
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`
+        document.head.append(script)
+        window.dataLayer = window.dataLayer || []
+        function gtag() {
+          window.dataLayer.push(arguments)
+        }
+        window.gtag = gtag
+        gtag('js', new Date())
+        gtag('config', measurementId)
+      }
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/">MRPACK to ZIP</a>
+      <nav aria-label="Primary navigation">
+        <a href="/">Converter</a>
+        <a href="/blog/">Guides</a>
+        <a href="/blog/how-to-convert-mrpack-to-zip/">Troubleshooting</a>
+        <a href="/blog/launcher-zip-vs-server-zip/">ZIP outputs</a>
+      </nav>
+    </header>
+
+    <main class="article-shell">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Converter</a>
+        <span>/</span>
+        <span>Privacy</span>
+      </nav>
+
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">Privacy</p>
+          <h1>How MRPACK to ZIP Handles Data</h1>
+          <p class="lede">
+            Local MRPACK files are read and converted in your browser. The site has no conversion
+            backend, but remote modes contact third-party hosts and the production site uses Google
+            Analytics. The details below separate those paths.
+          </p>
+          <p class="post-meta">Effective and last reviewed July 11, 2026</p>
+        </header>
+
+        <nav class="article-section" aria-labelledby="on-this-page">
+          <h2 id="on-this-page">On This Page</h2>
+          <ul class="checklist">
+            <li><a href="#summary">Short privacy summary</a></li>
+            <li><a href="#conversion-data">Conversion data paths</a></li>
+            <li><a href="#analytics">Google Analytics</a></li>
+            <li><a href="#storage">Cookies, storage, and retention</a></li>
+            <li><a href="#choices">Your choices</a></li>
+            <li><a href="#operator">Operator and changes</a></li>
+          </ul>
+        </nav>
+
+        <section class="article-section" aria-labelledby="summary">
+          <h2 id="summary">Short Privacy Summary</h2>
+          <div class="trust-grid">
+            <div class="trust-card">
+              <h3>Local upload mode</h3>
+              <p>Your selected <code>.mrpack</code> file is read in browser memory and is not uploaded to a site conversion server.</p>
+            </div>
+            <div class="trust-card">
+              <h3>Remote modes</h3>
+              <p>Your browser contacts Modrinth or the remote URL host to retrieve pack data and manifest files.</p>
+            </div>
+            <div class="trust-card">
+              <h3>Analytics</h3>
+              <p>Google Analytics receives page and coarse interaction events, but the site's custom events omit pack names, URLs, filenames, and file paths.</p>
+            </div>
+            <div class="trust-card">
+              <h3>Saved output</h3>
+              <p>The generated ZIP and optional missing-file report are downloaded through your browser. The site does not keep a server copy.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="article-section" aria-labelledby="conversion-data">
+          <h2 id="conversion-data">What Happens During Conversion</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Input mode</th>
+                  <th>What is read or sent</th>
+                  <th>Destination</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Upload File</td>
+                  <td>The selected MRPACK archive is read in browser memory.</td>
+                  <td>No site conversion backend; manifest download URLs are contacted directly by your browser.</td>
+                </tr>
+                <tr>
+                  <td>Project ID</td>
+                  <td>The Modrinth project URL, slug, or ID is used to find a version, then its MRPACK file is fetched.</td>
+                  <td><code>api.modrinth.com</code>, Modrinth's CDN, and hosts listed by the pack manifest.</td>
+                </tr>
+                <tr>
+                  <td>From URL</td>
+                  <td>The direct MRPACK URL and its response are handled by your browser.</td>
+                  <td>The URL host and hosts listed by the downloaded pack manifest.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            Remote services receive normal web request information such as your IP address,
+            browser headers, and the requested URL. Their own policies and server logs apply. Read
+            the <a href="https://modrinth.com/legal/privacy">Modrinth Privacy Policy</a> when using
+            Project ID mode.
+          </p>
+        </section>
+
+        <section class="article-section" aria-labelledby="analytics">
+          <h2 id="analytics">Google Analytics</h2>
+          <p>
+            The production site loads Google Analytics 4 using measurement ID
+            <code>G-PYDQW2NQP0</code>. Google may process page, device, browser, approximate location,
+            and interaction information under the
+            <a href="https://policies.google.com/privacy">Google Privacy Policy</a>.
+          </p>
+          <p>The converter's custom events use only these coarse fields:</p>
+          <ul>
+            <li>input type: upload, URL, or project;</li>
+            <li>target: Launcher ZIP or Server ZIP;</li>
+            <li>status and first failure category;</li>
+            <li>a broad file-count bucket such as 1–10 or 11–50.</li>
+          </ul>
+          <p>
+            Custom event parameters do not include the selected filename, pack name, project slug,
+            direct URL, downloaded file path, report contents, or generated ZIP contents.
+          </p>
+        </section>
+
+        <section class="article-section" aria-labelledby="storage">
+          <h2 id="storage">Cookies, Browser Storage, and Retention</h2>
+          <p>
+            The converter code does not store pack data in <code>localStorage</code> or
+            <code>sessionStorage</code>, and it does not set its own application cookies. Google
+            Analytics may use cookies or similar browser identifiers. Browser settings or content
+            blockers can limit that analytics storage.
+          </p>
+          <p>
+            Because there is no conversion backend, the site does not retain uploaded MRPACK files,
+            generated ZIPs, missing-file reports, or remote URLs in a conversion database. Analytics
+            retention is controlled through the site's Google Analytics configuration and Google's
+            policies.
+          </p>
+        </section>
+
+        <section class="article-section" aria-labelledby="choices">
+          <h2 id="choices">Your Choices</h2>
+          <ul class="evidence-list">
+            <li>Use Upload File mode when you do not want to send a project identifier or direct MRPACK URL to a lookup service.</li>
+            <li>Do not use remote modes if you do not want your browser to contact Modrinth or third-party file hosts.</li>
+            <li>Use browser privacy controls or a content blocker to limit Google Analytics requests.</li>
+            <li>Close the page after conversion to release in-memory file data; downloaded output remains wherever your browser saved it.</li>
+          </ul>
+        </section>
+
+        <section class="article-section" aria-labelledby="operator">
+          <h2 id="operator">Operator and Changes</h2>
+          <p>
+            MRPACK to ZIP is maintained by
+            <a href="https://github.com/xiaofei512">xiaofei512</a>. See the
+            <a href="/about/">About page</a> for maintainer identity, tool boundaries, and a dated
+            conversion test. A public support inbox is not currently listed.
+          </p>
+          <p>
+            This page will be updated when the converter's data flow, analytics fields, support
+            channel, or third-party services materially change. The effective date at the top will
+            change with it.
+          </p>
+        </section>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <div>
+        <strong>MRPACK to ZIP</strong>
+        <span>Independent browser-based converter maintained by <a href="https://github.com/xiaofei512">xiaofei512</a>.</span>
+      </div>
+      <nav aria-label="Footer navigation">
+        <a href="/about/">About</a>
+        <a aria-current="page" href="/privacy/">Privacy</a>
+        <a href="/blog/">Guides</a>
+      </nav>
+    </footer>
+  </body>
+</html>

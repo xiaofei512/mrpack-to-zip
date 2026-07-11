@@ -13,6 +13,8 @@ export default defineConfig({
         blog: entry('blog/index.html'),
         howToConvertMrpackToZip: entry('blog/how-to-convert-mrpack-to-zip/index.html'),
         launcherZipVsServerZip: entry('blog/launcher-zip-vs-server-zip/index.html'),
+        about: entry('about/index.html'),
+        privacy: entry('privacy/index.html'),
       },
     },
   },

@@ -138,6 +138,30 @@ code {
   padding: 32px 0 64px;
 }
 
+.site-footer {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  border-top: 1px solid var(--line);
+  padding: 24px 0 36px;
+  color: var(--text-soft);
+  font-size: 0.88rem;
+}
+
+.site-footer div,
+.site-footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+}
+
+.site-footer strong {
+  color: var(--text);
+}
+
 .hero-panel {
   display: grid;
   gap: 24px;
@@ -976,6 +1000,11 @@ details p {
     gap: 12px;
     width: min(100% - 20px, 480px);
     padding-top: 14px;
+  }
+
+  .site-footer {
+    flex-direction: column;
+    width: min(100% - 20px, 480px);
   }
 
   .site-nav {

@@ -34,21 +34,21 @@ describe('static SEO files', () => {
     expect(styles).not.toContain('JetBrains Mono')
   })
 
-  it('keeps visible conversion instructions aligned with HowTo structured data', () => {
+  it('keeps homepage application, publisher, and website entities connected', () => {
     const html = readFileSync('index.html', 'utf8')
     const graph = jsonLdGraph(html)
-    const howTo = graph.find((entry: { '@type'?: string }) => entry['@type'] === 'HowTo')
-    expect(howTo).toBeTruthy()
+    const app = graph.find((entry: { '@type'?: string }) => entry['@type'] === 'WebApplication')
+    const organization = graph.find((entry: { '@type'?: string }) => entry['@type'] === 'Organization')
+    const website = graph.find((entry: { '@type'?: string }) => entry['@type'] === 'WebSite')
 
-    const stepNames = howTo.step.map((step: { name: string }) => step.name)
-
-    expect(stepNames).toEqual([
-      'Choose your source',
-      'Keep Launcher ZIP selected',
-      'Click Convert',
-      'Download the result',
-      'Review missing files if needed',
-    ])
+    expect(app?.publisher?.['@id']).toBe('%VITE_PUBLIC_SITE_URL%/#organization')
+    expect(app?.isPartOf?.['@id']).toBe('%VITE_PUBLIC_SITE_URL%/#website')
+    expect(organization?.['@id']).toBe('%VITE_PUBLIC_SITE_URL%/#organization')
+    expect(organization?.logo?.url).toBe('%VITE_PUBLIC_SITE_URL%/logo.svg')
+    expect(organization?.logo?.width).toBe(512)
+    expect(website?.publisher?.['@id']).toBe('%VITE_PUBLIC_SITE_URL%/#organization')
+    expect(graph.some((entry: { '@type'?: string }) => entry['@type'] === 'HowTo')).toBe(false)
+    expect(graph.some((entry: { '@type'?: string }) => entry['@type'] === 'FAQPage')).toBe(false)
   })
 
   it('does not rewrite every unknown route to the homepage with a 200 status', () => {
@@ -66,6 +66,8 @@ describe('static SEO files', () => {
     expect(llms).toContain('https://mrpacktozip.net/sitemap.xml')
     expect(llms).toContain('https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/')
     expect(llms).toContain('https://mrpacktozip.net/blog/launcher-zip-vs-server-zip/')
+    expect(llms).toContain('https://mrpacktozip.net/about/')
+    expect(llms).toContain('https://mrpacktozip.net/privacy/')
     expect(llms).toContain('not affiliated with Modrinth')
   })
 
@@ -84,13 +86,15 @@ describe('static SEO files', () => {
     )
   })
 
-  it('builds every blog page as an explicit multi-page entry', () => {
+  it('builds every static content page as an explicit multi-page entry', () => {
     const input = viteConfig.build?.rollupOptions?.input
 
     expect(input).toBeTruthy()
     expect(JSON.stringify(input)).toContain('blog/index.html')
     expect(JSON.stringify(input)).toContain('blog/how-to-convert-mrpack-to-zip/index.html')
     expect(JSON.stringify(input)).toContain('blog/launcher-zip-vs-server-zip/index.html')
+    expect(JSON.stringify(input)).toContain('about/index.html')
+    expect(JSON.stringify(input)).toContain('privacy/index.html')
   })
 
   it('publishes blog URLs in the sitemap', () => {
@@ -100,6 +104,8 @@ describe('static SEO files', () => {
     expect(sitemap).toContain('https://mrpacktozip.net/blog/')
     expect(sitemap).toContain('https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/')
     expect(sitemap).toContain('https://mrpacktozip.net/blog/launcher-zip-vs-server-zip/')
+    expect(sitemap).toContain('https://mrpacktozip.net/about/')
+    expect(sitemap).toContain('https://mrpacktozip.net/privacy/')
   })
 
   it('keeps the blog index canonical, linked, and structured', () => {
@@ -123,15 +129,15 @@ describe('static SEO files', () => {
         path: 'blog/how-to-convert-mrpack-to-zip/index.html',
         canonical: 'https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/',
         title: 'MRPACK Conversion Errors: Missing Files, CORS, and Hashes',
-        schemaTypes: ['Article', 'HowTo', 'BreadcrumbList'],
-        requiredLinks: ['/', '/blog/', '/blog/launcher-zip-vs-server-zip/'],
+        schemaTypes: ['Article', 'BreadcrumbList'],
+        requiredLinks: ['/', '/blog/', '/blog/launcher-zip-vs-server-zip/', '/about/', '/privacy/'],
       },
       {
         path: 'blog/launcher-zip-vs-server-zip/index.html',
         canonical: 'https://mrpacktozip.net/blog/launcher-zip-vs-server-zip/',
         title: 'Launcher ZIP vs Server ZIP for MRPACK Files',
         schemaTypes: ['Article', 'BreadcrumbList'],
-        requiredLinks: ['/', '/blog/', '/blog/how-to-convert-mrpack-to-zip/'],
+        requiredLinks: ['/', '/blog/', '/blog/how-to-convert-mrpack-to-zip/', '/about/', '/privacy/'],
       },
     ]
 
@@ -162,7 +168,6 @@ describe('static SEO files', () => {
     const html = readFileSync('blog/how-to-convert-mrpack-to-zip/index.html', 'utf8')
     const graph = jsonLdGraph(html)
     const article = graph.find((entry: { '@type'?: string }) => entry['@type'] === 'Article')
-    const howTo = graph.find((entry: { '@type'?: string }) => entry['@type'] === 'HowTo')
 
     expect(html).toContain('<h1>MRPACK Conversion Errors: Missing Files, CORS, and Hashes</h1>')
     expect(html).not.toContain('<h1>How to Convert MRPACK to ZIP</h1>')
@@ -176,7 +181,45 @@ describe('static SEO files', () => {
     expect(html).toContain('https://support.modrinth.com/en/articles/8802351-modrinth-modpack-format-mrpack')
     expect(html).toContain('https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS')
     expect(article?.dateModified).toBe('2026-07-11')
-    expect(howTo?.name).toBe('How to troubleshoot MRPACK conversion errors')
+    expect(article?.author?.['@id']).toBe('https://mrpacktozip.net/#maintainer')
+    expect(article?.publisher?.['@id']).toBe('https://mrpacktozip.net/#organization')
+    expect(html).toContain('Maintained and reviewed by')
+    expect(graph.some((entry: { '@type'?: string }) => entry['@type'] === 'HowTo')).toBe(false)
+  })
+
+  it('publishes transparent About and Privacy pages with stable trust entities', () => {
+    const about = readFileSync('about/index.html', 'utf8')
+    const privacy = readFileSync('privacy/index.html', 'utf8')
+    const aboutGraph = jsonLdGraph(about)
+    const privacyGraph = jsonLdGraph(privacy)
+    const organization = aboutGraph.find(
+      (entry: { '@type'?: string }) => entry['@type'] === 'Organization',
+    )
+    const maintainer = aboutGraph.find((entry: { '@type'?: string }) => entry['@type'] === 'Person')
+
+    expect(about).toContain('<link rel="canonical" href="https://mrpacktozip.net/about/"')
+    expect(about).toContain('<h1>About MRPACK to ZIP</h1>')
+    expect(about).toContain('FPS Modpack-3.2.mrpack')
+    expect(about).toContain('kedIKix5')
+    expect(about).toContain('9 total; 9 downloaded; 0 failed')
+    expect(about).toContain('c7e7ec0ebafabd230c7c8adb5cd7a0f71e6568c14e8d8b2c7fd7cadea0876950')
+    expect(about).toContain('href="#test-record"')
+    expect(organization?.['@id']).toBe('https://mrpacktozip.net/#organization')
+    expect(maintainer?.['@id']).toBe('https://mrpacktozip.net/#maintainer')
+    expect(maintainer?.url).toBe('https://github.com/xiaofei512')
+
+    expect(privacy).toContain('<link rel="canonical" href="https://mrpacktozip.net/privacy/"')
+    expect(privacy).toContain('<h1>How MRPACK to ZIP Handles Data</h1>')
+    expect(privacy).toContain('G-PYDQW2NQP0')
+    expect(privacy).toContain('do not include the selected filename, pack name, project slug')
+    expect(privacy).toContain('https://modrinth.com/legal/privacy')
+    expect(privacy).toContain('href="#analytics"')
+    expect(privacyGraph.some((entry: { '@type'?: string }) => entry['@type'] === 'WebPage')).toBe(
+      true,
+    )
+    expect(privacyGraph.some((entry: { '@type'?: string }) => entry['@type'] === 'BreadcrumbList')).toBe(
+      true,
+    )
   })
 
   it('keeps blog screenshot assets available and lightweight', () => {

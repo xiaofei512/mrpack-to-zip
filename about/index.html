@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Learn who maintains MRPACK to ZIP, how the browser-based converter works, and what happened in a dated real-pack conversion test."
+    />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://mrpacktozip.net/about/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="About MRPACK to ZIP" />
+    <meta
+      property="og:description"
+      content="Maintainer identity, product boundaries, evidence sources, and a dated real-pack conversion test."
+    />
+    <meta property="og:url" content="https://mrpacktozip.net/about/" />
+    <meta property="og:image" content="https://mrpacktozip.net/og.svg" />
+    <title>About MRPACK to ZIP - Maintainer, Boundaries, and Test Evidence</title>
+    <link rel="stylesheet" href="/src/blog.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://mrpacktozip.net/#organization",
+            "name": "MRPACK to ZIP",
+            "url": "https://mrpacktozip.net/",
+            "logo": {
+              "@type": "ImageObject",
+              "@id": "https://mrpacktozip.net/#logo",
+              "url": "https://mrpacktozip.net/logo.svg",
+              "contentUrl": "https://mrpacktozip.net/logo.svg",
+              "width": 512,
+              "height": 512
+            }
+          },
+          {
+            "@type": "Person",
+            "@id": "https://mrpacktozip.net/#maintainer",
+            "name": "xiaofei512",
+            "url": "https://github.com/xiaofei512",
+            "worksFor": {
+              "@id": "https://mrpacktozip.net/#organization"
+            }
+          },
+          {
+            "@type": "AboutPage",
+            "@id": "https://mrpacktozip.net/about/#page",
+            "name": "About MRPACK to ZIP",
+            "url": "https://mrpacktozip.net/about/",
+            "description": "Maintainer identity, product boundaries, evidence sources, and a dated real-pack conversion test for MRPACK to ZIP.",
+            "about": {
+              "@id": "https://mrpacktozip.net/#organization"
+            },
+            "author": {
+              "@id": "https://mrpacktozip.net/#maintainer"
+            },
+            "isPartOf": {
+              "@id": "https://mrpacktozip.net/#website"
+            }
+          },
+          {
+            "@type": "BreadcrumbList",
+            "@id": "https://mrpacktozip.net/about/#breadcrumbs",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "MRPACK to ZIP Converter",
+                "item": "https://mrpacktozip.net/"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "About",
+                "item": "https://mrpacktozip.net/about/"
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+    <script>
+      const measurementId = '%VITE_GA_MEASUREMENT_ID%'
+      if (measurementId && !measurementId.startsWith('%')) {
+        const script = document.createElement('script')
+        script.async = true
+        script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`
+        document.head.append(script)
+        window.dataLayer = window.dataLayer || []
+        function gtag() {
+          window.dataLayer.push(arguments)
+        }
+        window.gtag = gtag
+        gtag('js', new Date())
+        gtag('config', measurementId)
+      }
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/">MRPACK to ZIP</a>
+      <nav aria-label="Primary navigation">
+        <a href="/">Converter</a>
+        <a href="/blog/">Guides</a>
+        <a href="/blog/how-to-convert-mrpack-to-zip/">Troubleshooting</a>
+        <a href="/blog/launcher-zip-vs-server-zip/">ZIP outputs</a>
+      </nav>
+    </header>
+
+    <main class="article-shell">
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        <a href="/">Converter</a>
+        <span>/</span>
+        <span>About</span>
+      </nav>
+
+      <article>
+        <header class="article-header">
+          <p class="eyebrow">About this tool</p>
+          <h1>About MRPACK to ZIP</h1>
+          <p class="lede">
+            MRPACK to ZIP is an independent browser-based utility maintained by
+            <a href="https://github.com/xiaofei512">xiaofei512</a>. It converts Modrinth
+            <code>.mrpack</code> manifests into Launcher ZIP or Server ZIP output while reporting
+            files the browser could not safely include.
+          </p>
+          <p class="post-meta">Last reviewed July 11, 2026</p>
+        </header>
+
+        <nav class="article-section" aria-labelledby="on-this-page">
+          <h2 id="on-this-page">On This Page</h2>
+          <ul class="checklist">
+            <li><a href="#boundaries">Tool boundaries</a></li>
+            <li><a href="#maintainer">Maintainer identity</a></li>
+            <li><a href="#test-record">Dated real-pack test</a></li>
+            <li><a href="#evidence">Evidence and maintenance rules</a></li>
+          </ul>
+        </nav>
+
+        <section class="article-section" aria-labelledby="boundaries">
+          <h2 id="boundaries">What the Tool Does—and Does Not Do</h2>
+          <div class="trust-grid">
+            <div class="trust-card">
+              <h3>It does</h3>
+              <ul>
+                <li>Read <code>modrinth.index.json</code> from a selected MRPACK file.</li>
+                <li>Copy shared and target-specific overrides into a new ZIP.</li>
+                <li>Fetch manifest files and check supported hashes.</li>
+                <li>Report blocked, invalid, unsafe, or mismatched files.</li>
+              </ul>
+            </div>
+            <div class="trust-card">
+              <h3>It does not</h3>
+              <ul>
+                <li>Operate an upload or mod-hosting backend.</li>
+                <li>Guarantee every third-party host permits browser downloads.</li>
+                <li>Bypass hash mismatches or unsafe archive paths.</li>
+                <li>Provide a complete one-click Minecraft server installation.</li>
+              </ul>
+            </div>
+          </div>
+          <p class="note">
+            This site is not affiliated with Modrinth, Mojang, Microsoft, Minecraft, or any pack
+            author. Product and project names remain the property of their respective owners.
+          </p>
+        </section>
+
+        <section class="article-section" aria-labelledby="maintainer">
+          <h2 id="maintainer">Who Maintains It</h2>
+          <p>
+            The site is maintained by the GitHub account
+            <a href="https://github.com/xiaofei512">xiaofei512</a>. That handle is the public
+            maintainer identity used when disclosing the relationship to this site in community
+            and documentation outreach.
+          </p>
+          <p>
+            The project does not currently claim a registered company identity or publish a public
+            support inbox. Conversion problems should first be checked against the
+            <a href="/blog/how-to-convert-mrpack-to-zip/">troubleshooting guide</a>. This page will
+            be updated if a dedicated support channel is added.
+          </p>
+        </section>
+
+        <section class="article-section" aria-labelledby="test-record">
+          <h2 id="test-record">Dated Real-Pack Conversion Test</h2>
+          <p>
+            On July 11, 2026 at 13:20 UTC, the current converter engine was run against the public
+            Modrinth project <a href="https://modrinth.com/modpack/fps">FPS Modpack</a>, version
+            <a href="https://modrinth.com/modpack/fps/version/kedIKix5">3.2</a>, using the default
+            Launcher ZIP target.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Test field</th>
+                  <th>Observed result</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Modrinth version ID</td><td><code>kedIKix5</code></td></tr>
+                <tr><td>Source file</td><td><code>FPS Modpack-3.2.mrpack</code></td></tr>
+                <tr><td>Manifest files</td><td>9 total; 9 downloaded; 0 failed</td></tr>
+                <tr><td>Conversion status</td><td>Success; 0 missing files; 0 warnings</td></tr>
+                <tr><td>Output size</td><td>14,680,878 bytes</td></tr>
+                <tr>
+                  <td>Output SHA-256</td>
+                  <td><code>c7e7ec0ebafabd230c7c8adb5cd7a0f71e6568c14e8d8b2c7fd7cadea0876950</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p>
+            This test proves that the recorded pack version completed through the current code path
+            at that time. It does not guarantee that every pack, future version, browser, or remote
+            host will behave the same way. A partial result remains a partial result even when a ZIP
+            can be downloaded.
+          </p>
+        </section>
+
+        <section class="article-section" aria-labelledby="evidence">
+          <h2 id="evidence">Evidence and Maintenance Rules</h2>
+          <ul class="evidence-list">
+            <li>
+              Manifest, environment, hash, and override behavior is checked against the
+              <a href="https://support.modrinth.com/en/articles/8802351-modrinth-modpack-format-mrpack"
+                >Modrinth MRPACK format specification</a
+              >.
+            </li>
+            <li>
+              Browser cross-origin limits are explained using the
+              <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS">MDN CORS guide</a>.
+            </li>
+            <li>Safety checks are not weakened to turn a failed or partial conversion into success.</li>
+            <li>Claims tied to a pack version are dated so later changes can be distinguished.</li>
+          </ul>
+          <p>
+            For data-handling details, read the <a href="/privacy/">Privacy page</a>. To use the
+            tool, return to the <a href="/">MRPACK to ZIP Converter</a>.
+          </p>
+        </section>
+      </article>
+    </main>
+
+    <footer class="site-footer">
+      <div>
+        <strong>MRPACK to ZIP</strong>
+        <span>Independent browser-based converter maintained by <a href="https://github.com/xiaofei512">xiaofei512</a>.</span>
+      </div>
+      <nav aria-label="Footer navigation">
+        <a aria-current="page" href="/about/">About</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/blog/">Guides</a>
+      </nav>
+    </footer>
+  </body>
+</html>

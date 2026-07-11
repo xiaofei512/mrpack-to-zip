@@ -32,118 +32,36 @@
             "operatingSystem": "Any",
             "isAccessibleForFree": true,
             "description": "Convert Modrinth .mrpack files into launcher-ready ZIP packages in your browser.",
-            "browserRequirements": "Requires a modern browser with ZIP and Web Crypto support."
+            "browserRequirements": "Requires a modern browser with ZIP and Web Crypto support.",
+            "publisher": {
+              "@id": "%VITE_PUBLIC_SITE_URL%/#organization"
+            },
+            "isPartOf": {
+              "@id": "%VITE_PUBLIC_SITE_URL%/#website"
+            }
           },
           {
-            "@type": "HowTo",
-            "@id": "%VITE_PUBLIC_SITE_URL%/#howto",
-            "name": "How to convert MRPACK to ZIP",
-            "description": "Choose a local .mrpack file, direct .mrpack URL, or Modrinth project ID, then generate a ZIP package in your browser.",
-            "step": [
-              {
-                "@type": "HowToStep",
-                "name": "Choose your source",
-                "text": "Upload a local .mrpack file, paste a direct .mrpack URL, or enter a Modrinth project URL, slug, or ID."
-              },
-              {
-                "@type": "HowToStep",
-                "name": "Keep Launcher ZIP selected",
-                "text": "Use the recommended Launcher ZIP for launcher imports and manual installs. Open Advanced only when you need a server-targeted ZIP."
-              },
-              {
-                "@type": "HowToStep",
-                "name": "Click Convert",
-                "text": "The browser reads the pack manifest, fetches listed files, checks supported hashes, and builds the ZIP locally."
-              },
-              {
-                "@type": "HowToStep",
-                "name": "Download the result",
-                "text": "Click Download ZIP when conversion finishes."
-              },
-              {
-                "@type": "HowToStep",
-                "name": "Review missing files if needed",
-                "text": "If files are missing, copy or download the missing file report and handle those files manually from the pack page."
-              }
-            ]
+            "@type": "Organization",
+            "@id": "%VITE_PUBLIC_SITE_URL%/#organization",
+            "name": "MRPACK to ZIP",
+            "url": "%VITE_PUBLIC_SITE_URL%/",
+            "logo": {
+              "@type": "ImageObject",
+              "@id": "%VITE_PUBLIC_SITE_URL%/#logo",
+              "url": "%VITE_PUBLIC_SITE_URL%/logo.svg",
+              "contentUrl": "%VITE_PUBLIC_SITE_URL%/logo.svg",
+              "width": 512,
+              "height": 512
+            }
           },
           {
-            "@type": "FAQPage",
-            "@id": "%VITE_PUBLIC_SITE_URL%/#faq",
-            "mainEntity": [
-              {
-                "@type": "Question",
-                "name": "What is an MRPACK file?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "An MRPACK file is a ZIP-based Modrinth modpack manifest with override folders and download instructions."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "How do I convert MRPACK to ZIP?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Choose a local file, paste a direct .mrpack URL, or enter a Modrinth project. Then convert the launcher ZIP, or use Advanced to build a server-targeted ZIP."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "Why is an MRPACK file not the same as a normal ZIP?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "An .mrpack file usually stores a manifest and override folders, while many mod files are referenced by download URLs and hashes. This tool rebuilds a regular ZIP by reading that manifest and fetching the referenced files."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "What is a Launcher ZIP?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "A Launcher ZIP is the default output for launcher imports and manual installs. It includes files that the pack marks as usable on the client side."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "What is a Server ZIP?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "A Server ZIP is an advanced output that uses server-compatible files when the pack marks them. It is not a one-click server setup and may still need manual server configuration."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "Why are some mods missing from the ZIP?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Some files may be hosted outside Modrinth or blocked by CORS. Missing files are listed so you can handle them manually."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "What does hash checked mean?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "When the manifest provides a supported hash, the downloaded file is checked against it. A mismatch is reported instead of silently adding the wrong file."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "Is my MRPACK file uploaded?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "No. Local files are processed inside your browser. Remote URL and project modes fetch remote files directly from your browser."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "Is this an official Modrinth tool?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "No. This is an independent tool and is not affiliated with Modrinth, Mojang, Microsoft, Minecraft, or pack authors."
-                }
-              }
-            ]
+            "@type": "WebSite",
+            "@id": "%VITE_PUBLIC_SITE_URL%/#website",
+            "name": "MRPACK to ZIP",
+            "url": "%VITE_PUBLIC_SITE_URL%/",
+            "publisher": {
+              "@id": "%VITE_PUBLIC_SITE_URL%/#organization"
+            }
           }
         ]
       }

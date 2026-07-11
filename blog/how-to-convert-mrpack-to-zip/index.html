@@ -37,47 +37,17 @@
             "mainEntityOfPage": "https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/",
             "image": "https://mrpacktozip.net/blog-assets/mrpack-upload-source.webp",
             "author": {
-              "@type": "Organization",
-              "name": "MRPACK to ZIP"
+              "@type": "Person",
+              "@id": "https://mrpacktozip.net/#maintainer",
+              "name": "xiaofei512",
+              "url": "https://github.com/xiaofei512"
             },
             "publisher": {
-              "@type": "Organization",
-              "name": "MRPACK to ZIP"
+              "@id": "https://mrpacktozip.net/#organization"
+            },
+            "isPartOf": {
+              "@id": "https://mrpacktozip.net/#website"
             }
-          },
-          {
-            "@type": "HowTo",
-            "@id": "https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/#howto",
-            "name": "How to troubleshoot MRPACK conversion errors",
-            "description": "Download the conversion report, identify the reason code, retry the correct input path, and recover missing files without bypassing safety checks.",
-            "tool": [
-              {
-                "@type": "HowToTool",
-                "name": "MRPACK to ZIP Converter"
-              }
-            ],
-            "step": [
-              {
-                "@type": "HowToStep",
-                "name": "Download the conversion report",
-                "text": "Save the report after a partial conversion so you have the pack version, target, file counts, paths, and reason codes."
-              },
-              {
-                "@type": "HowToStep",
-                "name": "Identify the reason code",
-                "text": "Check each missing path for download_failed, invalid_response, hash_mismatch, or unsafe_path."
-              },
-              {
-                "@type": "HowToStep",
-                "name": "Retry the correct input path",
-                "text": "Use Upload File to isolate project or direct-URL input problems, but do not bypass hash or unsafe-path checks."
-              },
-              {
-                "@type": "HowToStep",
-                "name": "Recover approved missing files",
-                "text": "Use the pack version page to locate the correct file, respect its distribution terms, and place it at the path shown in the report."
-              }
-            ]
           },
           {
             "@type": "BreadcrumbList",
@@ -152,7 +122,8 @@
             same partial ZIP.
           </p>
           <p class="post-meta">
-            Published June 30, 2026 · Updated July 11, 2026
+            Published June 30, 2026 · Updated July 11, 2026 · Maintained and reviewed by
+            <a href="/about/">xiaofei512</a>
           </p>
           <a class="button-link" href="/">Open the converter</a>
         </header>
@@ -368,5 +339,17 @@
         </section>
       </article>
     </main>
+
+    <footer class="site-footer">
+      <div>
+        <strong>MRPACK to ZIP</strong>
+        <span>Independent browser-based converter maintained by <a href="https://github.com/xiaofei512">xiaofei512</a>.</span>
+      </div>
+      <nav aria-label="Footer navigation">
+        <a href="/about/">About</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/blog/">Guides</a>
+      </nav>
+    </footer>
   </body>
 </html>

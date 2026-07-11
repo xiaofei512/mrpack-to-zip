@@ -31,17 +31,20 @@
             "description": "Learn when to use Launcher ZIP or Server ZIP when converting Modrinth MRPACK files.",
             "image": "https://mrpacktozip.net/blog-assets/server-zip-toggle.webp",
             "datePublished": "2026-06-30",
-            "dateModified": "2026-06-30",
+            "dateModified": "2026-07-11",
             "author": {
-              "@type": "Organization",
-              "name": "MRPACK to ZIP"
+              "@type": "Person",
+              "@id": "https://mrpacktozip.net/#maintainer",
+              "name": "xiaofei512",
+              "url": "https://github.com/xiaofei512"
             },
             "publisher": {
-              "@type": "Organization",
-              "name": "MRPACK to ZIP",
-              "url": "https://mrpacktozip.net/"
+              "@id": "https://mrpacktozip.net/#organization"
             },
-            "mainEntityOfPage": "https://mrpacktozip.net/blog/launcher-zip-vs-server-zip/"
+            "mainEntityOfPage": "https://mrpacktozip.net/blog/launcher-zip-vs-server-zip/",
+            "isPartOf": {
+              "@id": "https://mrpacktozip.net/#website"
+            }
           },
           {
             "@type": "BreadcrumbList",
@@ -113,7 +116,10 @@
             The default Launcher ZIP is for player-side imports. Server ZIP is an advanced output
             that only differs when the MRPACK manifest marks files or overrides as server-specific.
           </p>
-          <p class="post-meta">Published June 30, 2026</p>
+          <p class="post-meta">
+            Published June 30, 2026 · Updated July 11, 2026 · Maintained and reviewed by
+            <a href="/about/">xiaofei512</a>
+          </p>
           <a class="button-link" href="/">Open the converter</a>
         </header>
 
@@ -246,5 +252,17 @@
         </section>
       </article>
     </main>
+
+    <footer class="site-footer">
+      <div>
+        <strong>MRPACK to ZIP</strong>
+        <span>Independent browser-based converter maintained by <a href="https://github.com/xiaofei512">xiaofei512</a>.</span>
+      </div>
+      <nav aria-label="Footer navigation">
+        <a href="/about/">About</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/blog/">Guides</a>
+      </nav>
+    </footer>
   </body>
 </html>

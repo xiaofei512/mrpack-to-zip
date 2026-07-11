@@ -16,4 +16,12 @@
     <loc>https://mrpacktozip.net/blog/launcher-zip-vs-server-zip/</loc>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://mrpacktozip.net/about/</loc>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://mrpacktozip.net/privacy/</loc>
+    <priority>0.4</priority>
+  </url>
 </urlset>

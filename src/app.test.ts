@@ -48,8 +48,11 @@ describe('renderApp', () => {
     renderApp(root)
 
     expect(getByRole(root, 'heading', { level: 1, name: 'MRPACK to ZIP Converter' })).toBeTruthy()
-    expect(getByRole(root, 'navigation', { name: 'Primary navigation' })).toBeTruthy()
-    expect(getByRole(root, 'link', { name: 'Guides' }).getAttribute('href')).toBe('/blog/')
+    const primaryNavigation = getByRole(root, 'navigation', { name: 'Primary navigation' })
+    expect(primaryNavigation).toBeTruthy()
+    expect(getByRole(primaryNavigation, 'link', { name: 'Guides' }).getAttribute('href')).toBe(
+      '/blog/',
+    )
     expect(getByRole(root, 'link', { name: 'Troubleshooting' }).getAttribute('href')).toBe(
       '/blog/how-to-convert-mrpack-to-zip/',
     )
@@ -68,6 +71,10 @@ describe('renderApp', () => {
     expect(sourcePanel(root, 'url').hidden).toBe(true)
     expect(getByText(root, 'Why are some mods missing from the ZIP?')).toBeTruthy()
     expect(getByText(root, /not affiliated with Modrinth/i)).toBeTruthy()
+    expect(getByRole(root, 'navigation', { name: 'Footer navigation' })).toBeTruthy()
+    expect(getByRole(root, 'link', { name: 'About' }).getAttribute('href')).toBe('/about/')
+    expect(getByRole(root, 'link', { name: 'Privacy' }).getAttribute('href')).toBe('/privacy/')
+    expect(getByText(root, /maintained by/i)).toBeTruthy()
   })
 
   it('renders launcher guidance and expanded FAQ topics', () => {

@@ -249,5 +249,17 @@ export function appMarkup() {
         <details><summary>Is this an official Modrinth tool?</summary><p>No. This is an independent tool and is not affiliated with Modrinth, Mojang, Microsoft, Minecraft, or pack authors.</p></details>
       </section>
     </main>
+
+    <footer class="site-footer">
+      <div>
+        <strong>MRPACK to ZIP</strong>
+        <span>Independent browser-based converter maintained by <a href="https://github.com/xiaofei512">xiaofei512</a>.</span>
+      </div>
+      <nav aria-label="Footer navigation">
+        <a href="/about/">About</a>
+        <a href="/privacy/">Privacy</a>
+        <a href="/blog/">Guides</a>
+      </nav>
+    </footer>
   `
 }
