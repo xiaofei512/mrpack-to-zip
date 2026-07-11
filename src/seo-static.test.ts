@@ -24,6 +24,16 @@ function jsonLdGraph(html: string) {
 }
 
 describe('static SEO files', () => {
+  it('keeps the homepage font path local and free of render-blocking font stylesheets', () => {
+    const html = readFileSync('index.html', 'utf8')
+    const styles = readFileSync('src/style.css', 'utf8')
+
+    expect(html).not.toContain('fonts.googleapis.com')
+    expect(html).not.toContain('fonts.gstatic.com')
+    expect(styles).not.toContain('Playfair Display')
+    expect(styles).not.toContain('JetBrains Mono')
+  })
+
   it('keeps visible conversion instructions aligned with HowTo structured data', () => {
     const html = readFileSync('index.html', 'utf8')
     const graph = jsonLdGraph(html)
