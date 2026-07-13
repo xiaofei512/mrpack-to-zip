@@ -997,9 +997,9 @@ details p {
   .site-header {
     align-items: flex-start;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
     width: min(100% - 20px, 480px);
-    padding-top: 14px;
+    padding-top: 10px;
   }
 
   .site-footer {
@@ -1009,25 +1009,55 @@ details p {
 
   .site-nav {
     justify-content: flex-start;
+    flex-wrap: nowrap;
+    gap: 12px;
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .site-nav::-webkit-scrollbar {
+    display: none;
   }
 
   .shell {
     width: min(100% - 20px, 480px);
-    padding-top: 10px;
+    padding-top: 0;
     padding-bottom: 40px;
   }
 
   .hero-panel {
-    gap: 18px;
-    padding: 24px 0 20px;
+    gap: 12px;
+    padding: 16px 0;
   }
 
   .hero-copy {
-    gap: 12px;
+    gap: 8px;
+  }
+
+  .eyebrow {
+    display: none;
   }
 
   h1 {
-    font-size: 2rem;
+    font-size: 1.75rem;
+  }
+
+  .lede {
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  .trust-strip {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .trust-strip span {
+    padding: 5px 4px;
+    text-align: center;
   }
 
   h2,
@@ -1037,11 +1067,15 @@ details p {
 
   .tool-panel,
   .content-band {
-    padding: 16px;
+    padding: 12px;
   }
 
   .tool-panel {
-    gap: 12px;
+    gap: 10px;
+  }
+
+  .tool-section {
+    gap: 8px;
   }
 
   .source-grid {
@@ -1052,8 +1086,8 @@ details p {
     grid-template-columns: 1fr;
     justify-items: center;
     gap: 5px;
-    min-height: 84px;
-    padding: 10px 6px;
+    min-height: 72px;
+    padding: 8px 4px;
     text-align: center;
   }
 
@@ -1068,11 +1102,34 @@ details p {
   }
 
   .source-card small {
-    font-size: 0.76rem;
+    font-size: 0.72rem;
+  }
+
+  .field-block {
+    gap: 6px;
+    padding: 10px;
   }
 
   .file-picker-button {
-    min-height: 86px;
+    gap: 4px;
+    min-height: 64px;
+  }
+
+  .file-picker-button svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .default-package {
+    padding: 10px;
+  }
+
+  .default-package small {
+    font-size: 0.8rem;
+  }
+
+  .advanced-options {
+    padding: 8px 10px;
   }
 
   .guide-steps li {
