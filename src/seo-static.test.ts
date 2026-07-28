@@ -55,6 +55,8 @@ describe('static SEO files', () => {
     const redirects = readFileSync('public/_redirects', 'utf8')
 
     expect(redirects).toContain('/mrpack-to-zip / 301')
+    expect(redirects).toContain('/blog/how-to-convert-mrpack-to-zip / 301')
+    expect(redirects).toContain('/blog/how-to-convert-mrpack-to-zip/ / 301')
     expect(redirects).not.toContain('/* /index.html 200')
   })
 
@@ -64,7 +66,8 @@ describe('static SEO files', () => {
     expect(llms).toContain('# MRPACK to ZIP Converter')
     expect(llms).toContain('https://mrpacktozip.net/')
     expect(llms).toContain('https://mrpacktozip.net/sitemap.xml')
-    expect(llms).toContain('https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/')
+    expect(llms).toContain('https://mrpacktozip.net/blog/mrpack-conversion-errors/')
+    expect(llms).not.toContain('https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/')
     expect(llms).toContain('https://mrpacktozip.net/blog/launcher-zip-vs-server-zip/')
     expect(llms).toContain('https://mrpacktozip.net/about/')
     expect(llms).toContain('https://mrpacktozip.net/privacy/')
@@ -91,7 +94,8 @@ describe('static SEO files', () => {
 
     expect(input).toBeTruthy()
     expect(JSON.stringify(input)).toContain('blog/index.html')
-    expect(JSON.stringify(input)).toContain('blog/how-to-convert-mrpack-to-zip/index.html')
+    expect(JSON.stringify(input)).toContain('blog/mrpack-conversion-errors/index.html')
+    expect(JSON.stringify(input)).not.toContain('blog/how-to-convert-mrpack-to-zip/index.html')
     expect(JSON.stringify(input)).toContain('blog/launcher-zip-vs-server-zip/index.html')
     expect(JSON.stringify(input)).toContain('about/index.html')
     expect(JSON.stringify(input)).toContain('privacy/index.html')
@@ -102,7 +106,8 @@ describe('static SEO files', () => {
 
     expect(sitemap).toContain('https://mrpacktozip.net/')
     expect(sitemap).toContain('https://mrpacktozip.net/blog/')
-    expect(sitemap).toContain('https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/')
+    expect(sitemap).toContain('https://mrpacktozip.net/blog/mrpack-conversion-errors/')
+    expect(sitemap).not.toContain('https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/')
     expect(sitemap).toContain('https://mrpacktozip.net/blog/launcher-zip-vs-server-zip/')
     expect(sitemap).toContain('https://mrpacktozip.net/about/')
     expect(sitemap).toContain('https://mrpacktozip.net/privacy/')
@@ -114,7 +119,7 @@ describe('static SEO files', () => {
 
     expect(html).toContain('<link rel="canonical" href="https://mrpacktozip.net/blog/"')
     expect(html).toContain('property="og:url" content="https://mrpacktozip.net/blog/"')
-    expect(html).toContain('/blog/how-to-convert-mrpack-to-zip/')
+    expect(html).toContain('/blog/mrpack-conversion-errors/')
     expect(html).toContain('/blog/launcher-zip-vs-server-zip/')
     expect(html).toContain('%VITE_GA_MEASUREMENT_ID%')
     expect(graph.some((entry: { '@type'?: string }) => entry['@type'] === 'Blog')).toBe(true)
@@ -126,8 +131,8 @@ describe('static SEO files', () => {
   it('keeps article pages with unique metadata, schema, internal links, and screenshots', () => {
     const pages = [
       {
-        path: 'blog/how-to-convert-mrpack-to-zip/index.html',
-        canonical: 'https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/',
+        path: 'blog/mrpack-conversion-errors/index.html',
+        canonical: 'https://mrpacktozip.net/blog/mrpack-conversion-errors/',
         title: 'MRPACK Conversion Errors: Missing Files, CORS, and Hashes',
         schemaTypes: ['Article', 'BreadcrumbList'],
         requiredLinks: ['/', '/blog/', '/blog/launcher-zip-vs-server-zip/', '/about/', '/privacy/'],
@@ -137,7 +142,7 @@ describe('static SEO files', () => {
         canonical: 'https://mrpacktozip.net/blog/launcher-zip-vs-server-zip/',
         title: 'Launcher ZIP vs Server ZIP for MRPACK Files',
         schemaTypes: ['Article', 'BreadcrumbList'],
-        requiredLinks: ['/', '/blog/', '/blog/how-to-convert-mrpack-to-zip/', '/about/', '/privacy/'],
+        requiredLinks: ['/', '/blog/', '/blog/mrpack-conversion-errors/', '/about/', '/privacy/'],
       },
     ]
 
@@ -165,7 +170,7 @@ describe('static SEO files', () => {
   })
 
   it('keeps the troubleshooting guide distinct from the converter intent', () => {
-    const html = readFileSync('blog/how-to-convert-mrpack-to-zip/index.html', 'utf8')
+    const html = readFileSync('blog/mrpack-conversion-errors/index.html', 'utf8')
     const graph = jsonLdGraph(html)
     const article = graph.find((entry: { '@type'?: string }) => entry['@type'] === 'Article')
 

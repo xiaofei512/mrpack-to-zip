@@ -8,7 +8,7 @@ export function appMarkup() {
       <nav class="site-nav" aria-label="Primary navigation">
         <a aria-current="page" href="/">Converter</a>
         <a href="/blog/">Guides</a>
-        <a href="/blog/how-to-convert-mrpack-to-zip/">Troubleshooting</a>
+        <a href="/blog/mrpack-conversion-errors/">Troubleshooting</a>
         <a href="/blog/launcher-zip-vs-server-zip/">ZIP outputs</a>
       </nav>
     </header>
@@ -218,7 +218,7 @@ export function appMarkup() {
         <p class="section-intro">Use these guides when a conversion is partial, a file fails validation, or you need to choose between Launcher ZIP and Server ZIP.</p>
         <div class="process-grid guide-links">
           <article>
-            <strong><a href="/blog/how-to-convert-mrpack-to-zip/">MRPACK conversion troubleshooting</a></strong>
+            <strong><a href="/blog/mrpack-conversion-errors/">MRPACK conversion troubleshooting</a></strong>
             <p>Diagnose missing files, CORS failures, invalid responses, unsafe paths, and hash mismatches.</p>
           </article>
           <article>

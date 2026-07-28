@@ -54,7 +54,7 @@ describe('renderApp', () => {
       '/blog/',
     )
     expect(getByRole(root, 'link', { name: 'Troubleshooting' }).getAttribute('href')).toBe(
-      '/blog/how-to-convert-mrpack-to-zip/',
+      '/blog/mrpack-conversion-errors/',
     )
     expect((getByRole(root, 'radio', { name: 'Upload File' }) as HTMLInputElement).checked).toBe(
       true,
@@ -90,7 +90,7 @@ describe('renderApp', () => {
     expect(getByRole(root, 'heading', { level: 2, name: 'MRPACK conversion guides' })).toBeTruthy()
     expect(
       getByRole(root, 'link', { name: 'MRPACK conversion troubleshooting' }).getAttribute('href'),
-    ).toBe('/blog/how-to-convert-mrpack-to-zip/')
+    ).toBe('/blog/mrpack-conversion-errors/')
     expect(getByText(root, 'Why is an MRPACK file not the same as a normal ZIP?')).toBeTruthy()
     expect(getByText(root, 'What does hash checked mean?')).toBeTruthy()
   })

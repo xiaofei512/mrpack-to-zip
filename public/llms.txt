@@ -11,7 +11,7 @@ Sitemap: https://mrpacktozip.net/sitemap.xml
 
 ## Guides
 
-- [MRPACK Conversion Troubleshooting](https://mrpacktozip.net/blog/how-to-convert-mrpack-to-zip/): Diagnose missing files, CORS failures, invalid responses, unsafe paths, and hash mismatches from a partial conversion report.
+- [MRPACK Conversion Troubleshooting](https://mrpacktozip.net/blog/mrpack-conversion-errors/): Diagnose missing files, CORS failures, invalid responses, unsafe paths, and hash mismatches from a partial conversion report.
 - [Launcher ZIP vs Server ZIP](https://mrpacktozip.net/blog/launcher-zip-vs-server-zip/): Explains when to use the default launcher output and when the advanced server output is appropriate.
 
 ## Trust and Policies
