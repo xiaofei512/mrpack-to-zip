@@ -1,7 +1,16 @@
 import JSZip from 'jszip'
 
 export type ConversionTarget = 'client' | 'server'
-export type ConversionStatus = 'success' | 'partial' | 'failed'
+export type ConversionStatus = 'success' | 'partial'
+export type ConversionErrorCode =
+  | 'input_invalid'
+  | 'source_lookup_failed'
+  | 'source_download_failed'
+  | 'archive_invalid'
+  | 'manifest_missing'
+  | 'manifest_invalid'
+  | 'zip_generation_failed'
+  | 'unknown'
 export type MissingReason =
   | 'download_failed'
   | 'hash_mismatch'
@@ -9,6 +18,30 @@ export type MissingReason =
   | 'invalid_response'
 
 export type FetchLike = (url: string) => Promise<Response>
+
+export class ConversionError extends Error {
+  readonly code: ConversionErrorCode
+
+  constructor(code: ConversionErrorCode, message: string, cause?: unknown) {
+    super(message, cause === undefined ? undefined : { cause })
+    this.name = 'ConversionError'
+    this.code = code
+  }
+}
+
+export function conversionErrorDetails(error: unknown): {
+  code: ConversionErrorCode
+  message: string
+} {
+  if (error instanceof ConversionError) {
+    return { code: error.code, message: error.message }
+  }
+
+  return {
+    code: 'unknown',
+    message: 'Conversion failed unexpectedly. Try again or check the troubleshooting guide.',
+  }
+}
 
 export type MrpackInput =
   | { kind: 'archive'; data: ArrayBuffer | Uint8Array | Blob; sourceName?: string }
@@ -97,18 +130,49 @@ export async function convertMrpack(
   const archiveData = await loadArchiveInput(input, fetcher, warnings)
   options.onProgress?.({ phase: 'loading', current: 0, total: 1, label: 'Reading mrpack' })
 
-  const sourceZip = await JSZip.loadAsync(archiveData)
+  let sourceZip: JSZip
+  try {
+    sourceZip = await JSZip.loadAsync(archiveData)
+  } catch (cause) {
+    throw new ConversionError(
+      'archive_invalid',
+      'The selected file is not a readable .mrpack archive.',
+      cause,
+    )
+  }
   const manifestFile = sourceZip.file('modrinth.index.json')
 
   if (!manifestFile) {
-    throw new Error('Missing modrinth.index.json.')
+    throw new ConversionError('manifest_missing', 'Missing modrinth.index.json.')
+  }
+
+  let manifestText: string
+  try {
+    manifestText = await manifestFile.async('string')
+  } catch (cause) {
+    throw new ConversionError(
+      'archive_invalid',
+      'The .mrpack manifest could not be read from the archive.',
+      cause,
+    )
   }
 
   let manifest: ModrinthManifest
   try {
-    manifest = JSON.parse(await manifestFile.async('string')) as ModrinthManifest
-  } catch {
-    throw new Error('modrinth.index.json is not valid JSON.')
+    manifest = JSON.parse(manifestText) as ModrinthManifest
+  } catch (cause) {
+    throw new ConversionError(
+      'manifest_invalid',
+      'modrinth.index.json is not valid JSON.',
+      cause,
+    )
+  }
+
+  if (manifest.files !== undefined && !Array.isArray(manifest.files)) {
+    throw new ConversionError(
+      'manifest_invalid',
+      'modrinth.index.json has an invalid files list.',
+    )
   }
 
   const newZip = new JSZip()
@@ -122,7 +186,15 @@ export async function convertMrpack(
     total: 1,
     label: 'Copying overrides',
   })
-  await copyOverrides(sourceZip, newZip, options.target, warnings)
+  try {
+    await copyOverrides(sourceZip, newZip, options.target, warnings)
+  } catch (cause) {
+    throw new ConversionError(
+      'archive_invalid',
+      'The .mrpack archive could not be read completely.',
+      cause,
+    )
+  }
 
   for (const [index, file] of targetFiles.entries()) {
     options.onProgress?.({
@@ -162,7 +234,16 @@ export async function convertMrpack(
     total: targetFiles.length,
     label: 'Creating ZIP',
   })
-  const zipBlob = await newZip.generateAsync({ type: 'blob' })
+  let zipBlob: Blob
+  try {
+    zipBlob = await newZip.generateAsync({ type: 'blob' })
+  } catch (cause) {
+    throw new ConversionError(
+      'zip_generation_failed',
+      'The converted ZIP could not be created in this browser.',
+      cause,
+    )
+  }
 
   options.onProgress?.({
     phase: 'complete',
@@ -191,15 +272,43 @@ export async function resolveProjectMrpack(
 ): Promise<ProjectResolveResult> {
   const projectIdOrSlug = parseProjectIdOrSlug(projectIdOrSlugOrUrl)
   const fetcher = options.fetcher ?? fetch
-  const response = await fetcher(
-    `${MODRINTH_PROJECT_VERSION_API}${encodeURIComponent(projectIdOrSlug)}/version`,
-  )
-
-  if (!response.ok) {
-    throw new Error('Invalid Modrinth project ID, slug, or URL.')
+  let response: Response
+  try {
+    response = await fetcher(
+      `${MODRINTH_PROJECT_VERSION_API}${encodeURIComponent(projectIdOrSlug)}/version`,
+    )
+  } catch (cause) {
+    throw new ConversionError(
+      'source_lookup_failed',
+      'Could not look up this Modrinth project. Try again later.',
+      cause,
+    )
   }
 
-  const versions = (await response.json()) as ModrinthVersion[]
+  if (!response.ok) {
+    const message = response.status === 404
+      ? 'Invalid Modrinth project ID, slug, or URL.'
+      : 'Modrinth project lookup is temporarily unavailable. Try again later.'
+    throw new ConversionError(
+      'source_lookup_failed',
+      message,
+    )
+  }
+
+  let versions: ModrinthVersion[]
+  try {
+    const payload = await response.json()
+    if (!Array.isArray(payload)) {
+      throw new TypeError('Expected a version list.')
+    }
+    versions = payload as ModrinthVersion[]
+  } catch (cause) {
+    throw new ConversionError(
+      'source_lookup_failed',
+      'Modrinth returned an unreadable project response. Try again later.',
+      cause,
+    )
+  }
   const candidates = versions
     .map((version) => {
       const file = findMrpackFile(version)
@@ -210,7 +319,10 @@ export async function resolveProjectMrpack(
     )
 
   if (candidates.length === 0) {
-    throw new Error('No .mrpack file was found for this Modrinth project.')
+    throw new ConversionError(
+      'source_lookup_failed',
+      'No .mrpack file was found for this Modrinth project.',
+    )
   }
 
   const release = candidates
@@ -235,14 +347,20 @@ export function parseProjectIdOrSlug(value: string): string {
   const trimmed = value.trim()
 
   if (!trimmed) {
-    throw new Error('Enter a Modrinth project URL, slug, or project ID.')
+    throw new ConversionError(
+      'input_invalid',
+      'Enter a Modrinth project URL, slug, or project ID.',
+    )
   }
 
   try {
     const url = new URL(trimmed)
 
     if (url.hostname !== 'modrinth.com' && url.hostname !== 'www.modrinth.com') {
-      throw new Error('Use a Modrinth project URL, slug, or project ID.')
+      throw new ConversionError(
+        'input_invalid',
+        'Use a Modrinth project URL, slug, or project ID.',
+      )
     }
 
     const segments = url.pathname.split('/').filter(Boolean)
@@ -252,7 +370,10 @@ export function parseProjectIdOrSlug(value: string): string {
     const projectSlug = segments[projectTypeIndex + 1]
 
     if (projectTypeIndex === -1 || !projectSlug) {
-      throw new Error('Use a Modrinth project URL, slug, or project ID.')
+      throw new ConversionError(
+        'input_invalid',
+        'Use a Modrinth project URL, slug, or project ID.',
+      )
     }
 
     return projectSlug
@@ -262,7 +383,10 @@ export function parseProjectIdOrSlug(value: string): string {
         return trimmed
       }
 
-      throw new Error('Enter a valid Modrinth project ID or slug.')
+      throw new ConversionError(
+        'input_invalid',
+        'Enter a valid Modrinth project ID or slug.',
+      )
     }
 
     throw error
@@ -307,7 +431,15 @@ async function loadArchiveInput(
   warnings: string[],
 ): Promise<ArrayBuffer> {
   if (input.kind === 'archive') {
-    return toArrayBuffer(input.data)
+    try {
+      return await toArrayBuffer(input.data)
+    } catch (cause) {
+      throw new ConversionError(
+        'archive_invalid',
+        'The selected .mrpack file could not be read in this browser.',
+        cause,
+      )
+    }
   }
 
   if (input.kind === 'project') {
@@ -317,20 +449,29 @@ async function loadArchiveInput(
   }
 
   if (!input.url.includes('.mrpack')) {
-    throw new Error('Enter a direct .mrpack download URL.')
+    throw new ConversionError('input_invalid', 'Enter a direct .mrpack download URL.')
   }
 
   return fetchArrayBuffer(input.url, fetcher, 'Could not download the .mrpack URL.')
 }
 
 async function fetchArrayBuffer(url: string, fetcher: FetchLike, errorMessage: string) {
-  const response = await fetcher(url)
-
-  if (!response.ok) {
-    throw new Error(errorMessage)
+  let response: Response
+  try {
+    response = await fetcher(url)
+  } catch (cause) {
+    throw new ConversionError('source_download_failed', errorMessage, cause)
   }
 
-  return response.arrayBuffer()
+  if (!response.ok) {
+    throw new ConversionError('source_download_failed', errorMessage)
+  }
+
+  try {
+    return await response.arrayBuffer()
+  } catch (cause) {
+    throw new ConversionError('source_download_failed', errorMessage, cause)
+  }
 }
 
 async function toArrayBuffer(data: ArrayBuffer | Uint8Array | Blob): Promise<ArrayBuffer> {

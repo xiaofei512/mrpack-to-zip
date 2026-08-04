@@ -212,6 +212,7 @@ describe('static SEO files', () => {
     expect(organization?.['@id']).toBe('https://mrpacktozip.net/#organization')
     expect(maintainer?.['@id']).toBe('https://mrpacktozip.net/#maintainer')
     expect(maintainer?.url).toBe('https://github.com/xiaofei512')
+    expect(about).toContain('mailto:wuguang425@gmail.com?subject=MRPACK%20to%20ZIP%20help')
 
     expect(privacy).toContain('<link rel="canonical" href="https://mrpacktozip.net/privacy/"')
     expect(privacy).toContain('<h1>How MRPACK to ZIP Handles Data</h1>')
@@ -219,6 +220,10 @@ describe('static SEO files', () => {
     expect(privacy).toContain('do not include the selected filename, pack name, project slug')
     expect(privacy).toContain('https://modrinth.com/legal/privacy')
     expect(privacy).toContain('href="#analytics"')
+    expect(privacy).toContain('The checkpoint has no free-text field.')
+    expect(privacy).toContain('does not create a separate feedback')
+    expect(privacy).toContain('database or store the checkpoint in browser storage')
+    expect(privacy).toContain('mailto:wuguang425@gmail.com?subject=MRPACK%20to%20ZIP%20help')
     expect(privacyGraph.some((entry: { '@type'?: string }) => entry['@type'] === 'WebPage')).toBe(
       true,
     )

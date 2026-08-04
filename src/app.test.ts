@@ -2,7 +2,7 @@
 import { fireEvent, getByLabelText, getByRole, getByText, waitFor } from '@testing-library/dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderApp } from './app'
-import type { ConversionResult } from './lib/mrpack'
+import { ConversionError, type ConversionResult } from './lib/mrpack'
 
 function result(overrides: Partial<ConversionResult> = {}): ConversionResult {
   return {
@@ -38,7 +38,17 @@ function sourcePanel(root: HTMLElement, source: 'project' | 'url' | 'upload') {
 
 describe('renderApp', () => {
   beforeEach(() => {
+    vi.restoreAllMocks()
     document.body.innerHTML = ''
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      value: vi.fn(() => 'blob:fixture'),
+    })
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      value: vi.fn(),
+    })
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {})
   })
 
   it('renders source cards, launcher default copy, FAQ, and independent disclaimer', () => {
@@ -146,6 +156,23 @@ describe('renderApp', () => {
               <button id="copy-missing" type="button">Copy missing file list</button>
               <button id="download-report" type="button">Download report .txt</button>
             </div>
+            <section id="outcome-feedback" aria-labelledby="outcome-question" hidden>
+              <span id="outcome-target"></span>
+              <h3 id="outcome-question">Did this ZIP complete your task?</h3>
+              <p id="outcome-hint">Test first.</p>
+              <div id="outcome-actions">
+                <button id="outcome-yes" type="button">Yes</button>
+                <button id="outcome-no" type="button" aria-expanded="false" aria-controls="outcome-reasons">No</button>
+                <button id="outcome-deferred" type="button">I haven't tested it yet</button>
+              </div>
+              <fieldset id="outcome-reasons" hidden>
+                <legend>What stopped you?</legend>
+                <div id="outcome-reason-options"></div>
+                <button id="outcome-reason-submit" type="button" disabled>Send feedback</button>
+              </fieldset>
+              <p id="outcome-thanks" hidden></p>
+              <p id="outcome-help" hidden><a href="mailto:wuguang425@gmail.com?subject=MRPACK%20to%20ZIP%20help">wuguang425@gmail.com</a></p>
+            </section>
           </section>
         </form>
       </main>
@@ -214,6 +241,195 @@ describe('renderApp', () => {
     expect(getByText(root, /download this mod manually/i)).toBeTruthy()
     expect(getByText(root, /Launcher ZIP package/i)).toBeTruthy()
     expect(getByText(root, /download the partial ZIP or copy the report/i)).toBeTruthy()
+  })
+
+  it('tracks each distinct partial reason once without exposing file paths', async () => {
+    const root = document.createElement('div')
+    document.body.append(root)
+    const convertMrpack = vi.fn(async () =>
+      result({
+        filesTotal: 3,
+        filesDownloaded: 0,
+        filesFailed: 3,
+        missingFiles: [
+          {
+            path: 'mods/private-one.jar',
+            reason: 'download_failed',
+            message: 'Download failed.',
+          },
+          {
+            path: 'mods/private-two.jar',
+            reason: 'hash_mismatch',
+            message: 'Hash mismatch.',
+          },
+          {
+            path: 'mods/private-three.jar',
+            reason: 'download_failed',
+            message: 'Download failed.',
+          },
+        ],
+      }),
+    )
+    const trackEvent = vi.fn()
+
+    renderApp(root, { convertMrpack, trackEvent })
+    const fileInput = getByLabelText(root, 'Upload .mrpack file') as HTMLInputElement
+    fireEvent.change(fileInput, {
+      target: { files: [new File(['fixture'], 'private-pack.mrpack')] },
+    })
+    fireEvent.click(getByRole(root, 'button', { name: /Convert file to ZIP/i }))
+
+    await waitFor(() => expect(getByText(root, 'Partial ZIP ready')).toBeTruthy())
+
+    const reasonEvents = trackEvent.mock.calls.filter(([name]) => name === 'convert_partial_reason')
+    expect(reasonEvents.map(([, params]) => params.failure_reason)).toEqual([
+      'download_failed',
+      'hash_mismatch',
+    ])
+    expect(JSON.stringify(reasonEvents)).not.toContain('private-')
+  })
+
+  it('uses typed fatal error codes and does not expose unknown error details', async () => {
+    const root = document.createElement('div')
+    document.body.append(root)
+    const convertMrpack = vi
+      .fn()
+      .mockRejectedValueOnce(
+        new ConversionError('manifest_invalid', 'modrinth.index.json is not valid JSON.'),
+      )
+      .mockRejectedValueOnce(new Error('secret URL https://private.example/pack.mrpack'))
+    const trackEvent = vi.fn()
+
+    renderApp(root, { convertMrpack, trackEvent })
+    const fileInput = getByLabelText(root, 'Upload .mrpack file') as HTMLInputElement
+    fireEvent.change(fileInput, { target: { files: [new File(['fixture'], 'fixture.mrpack')] } })
+    fireEvent.click(getByRole(root, 'button', { name: /Convert file to ZIP/i }))
+
+    await waitFor(() => expect(getByText(root, 'modrinth.index.json is not valid JSON.')).toBeTruthy())
+    expect(trackEvent).toHaveBeenCalledWith('convert_failed', {
+      input_type: 'upload',
+      target: 'client',
+      status: 'failed',
+      failure_reason: 'manifest_invalid',
+      file_count_bucket: '0',
+    })
+
+    fireEvent.click(getByRole(root, 'button', { name: /Convert file to ZIP/i }))
+    await waitFor(() =>
+      expect(
+        getByText(root, 'Conversion failed unexpectedly. Try again or check the troubleshooting guide.'),
+      ).toBeTruthy(),
+    )
+    expect(trackEvent).toHaveBeenCalledWith('convert_failed', {
+      input_type: 'upload',
+      target: 'client',
+      status: 'failed',
+      failure_reason: 'unknown',
+      file_count_bucket: '0',
+    })
+    expect(root.textContent).not.toContain('private.example')
+    expect(JSON.stringify(trackEvent.mock.calls)).not.toContain('private.example')
+  })
+
+  it('shows one launcher checkpoint after download and allows a deferred answer to become Yes', async () => {
+    const root = document.createElement('div')
+    document.body.append(root)
+    const convertMrpack = vi.fn(async () =>
+      result({ status: 'success', missingFiles: [], filesDownloaded: 2, filesFailed: 0 }),
+    )
+    const trackEvent = vi.fn()
+
+    renderApp(root, { convertMrpack, trackEvent })
+    const fileInput = getByLabelText(root, 'Upload .mrpack file') as HTMLInputElement
+    fireEvent.change(fileInput, { target: { files: [new File(['fixture'], 'fixture.mrpack')] } })
+    fireEvent.click(getByRole(root, 'button', { name: /Convert file to ZIP/i }))
+    await waitFor(() => expect(getByText(root, 'ZIP ready')).toBeTruthy())
+
+    const download = getByRole(root, 'button', { name: 'Download ZIP' })
+    fireEvent.click(download)
+    fireEvent.click(download)
+
+    expect(
+      getByRole(root, 'heading', {
+        level: 3,
+        name: 'Were you able to import or install this ZIP and launch the pack?',
+      }),
+    ).toBeTruthy()
+    expect(trackEvent.mock.calls.filter(([name]) => name === 'zip_feedback_shown')).toHaveLength(1)
+
+    fireEvent.click(getByRole(root, 'button', { name: "I haven't tested it yet" }))
+    expect(trackEvent.mock.calls.filter(([name]) => name === 'zip_outcome_deferred')).toHaveLength(1)
+    fireEvent.click(getByRole(root, 'button', { name: 'Yes' }))
+
+    expect(trackEvent).toHaveBeenCalledWith('zip_outcome_yes', {
+      input_type: 'upload',
+      target: 'client',
+      status: 'success',
+      failure_reason: 'none',
+      file_count_bucket: '1-10',
+    })
+    expect(getByText(root, 'Thanks. That confirms the ZIP supported your next step.')).toBeTruthy()
+    expect(root.querySelector<HTMLElement>('#outcome-help')?.hidden).toBe(true)
+  })
+
+  it('collects an enumerated Server ZIP No reason and exposes only the approved help email', async () => {
+    const root = document.createElement('div')
+    document.body.append(root)
+    const convertMrpack = vi.fn(async () => result({ target: 'server' }))
+    const trackEvent = vi.fn()
+
+    renderApp(root, { convertMrpack, trackEvent })
+    const fileInput = getByLabelText(root, 'Upload .mrpack file') as HTMLInputElement
+    fireEvent.change(fileInput, { target: { files: [new File(['fixture'], 'fixture.mrpack')] } })
+    fireEvent.click(getByLabelText(root, 'Build a Server ZIP instead'))
+    fireEvent.click(getByRole(root, 'button', { name: /Convert file to ZIP/i }))
+    await waitFor(() => expect(getByText(root, 'Partial ZIP ready')).toBeTruthy())
+    fireEvent.click(getByRole(root, 'button', { name: 'Download ZIP' }))
+
+    expect(
+      getByRole(root, 'heading', {
+        level: 3,
+        name: 'Were you still able to set up and start the server with this partial ZIP?',
+      }),
+    ).toBeTruthy()
+    fireEvent.click(getByRole(root, 'button', { name: 'No' }))
+    fireEvent.click(getByLabelText(root, 'Required server files were missing'))
+    fireEvent.click(getByRole(root, 'button', { name: 'Send feedback' }))
+
+    expect(trackEvent).toHaveBeenCalledWith('zip_outcome_no', {
+      input_type: 'upload',
+      target: 'server',
+      status: 'partial',
+      failure_reason: 'download_failed',
+      file_count_bucket: '1-10',
+      outcome_reason: 'required_files_missing',
+    })
+    const help = root.querySelector<HTMLElement>('#outcome-help')
+    expect(help?.hidden).toBe(false)
+    expect(
+      getByRole(help as HTMLElement, 'link', { name: 'wuguang425@gmail.com' }).getAttribute('href'),
+    ).toBe('mailto:wuguang425@gmail.com?subject=MRPACK%20to%20ZIP%20help')
+    expect(JSON.stringify(trackEvent.mock.calls)).not.toContain('fixture.mrpack')
+  })
+
+  it('resets the checkpoint when a new conversion starts', async () => {
+    const root = document.createElement('div')
+    document.body.append(root)
+    const convertMrpack = vi.fn(async () =>
+      result({ status: 'success', missingFiles: [], filesDownloaded: 2, filesFailed: 0 }),
+    )
+
+    renderApp(root, { convertMrpack })
+    const fileInput = getByLabelText(root, 'Upload .mrpack file') as HTMLInputElement
+    fireEvent.change(fileInput, { target: { files: [new File(['fixture'], 'fixture.mrpack')] } })
+    fireEvent.click(getByRole(root, 'button', { name: /Convert file to ZIP/i }))
+    await waitFor(() => expect(getByText(root, 'ZIP ready')).toBeTruthy())
+    fireEvent.click(getByRole(root, 'button', { name: 'Download ZIP' }))
+    expect(root.querySelector<HTMLElement>('#outcome-feedback')?.hidden).toBe(false)
+
+    fireEvent.click(getByRole(root, 'button', { name: /Convert file to ZIP/i }))
+    expect(root.querySelector<HTMLElement>('#outcome-feedback')?.hidden).toBe(true)
+    await waitFor(() => expect(convertMrpack).toHaveBeenCalledTimes(2))
   })
 
   it('switches source panels and submits project input without leaking hidden values', async () => {

@@ -36,7 +36,7 @@
             "isPartOf": {
               "@id": "https://mrpacktozip.net/#website"
             },
-            "dateModified": "2026-07-11"
+            "dateModified": "2026-08-04"
           },
           {
             "@type": "BreadcrumbList",
@@ -103,7 +103,7 @@
             backend, but remote modes contact third-party hosts and the production site uses Google
             Analytics. The details below separate those paths.
           </p>
-          <p class="post-meta">Effective and last reviewed July 11, 2026</p>
+          <p class="post-meta">Effective and last reviewed August 4, 2026</p>
         </header>
 
         <nav class="article-section" aria-labelledby="on-this-page">
@@ -131,7 +131,7 @@
             </div>
             <div class="trust-card">
               <h3>Analytics</h3>
-              <p>Google Analytics receives page and coarse interaction events, but the site's custom events omit pack names, URLs, filenames, and file paths.</p>
+              <p>Google Analytics receives page and coarse interaction events, including enumerated conversion and task-outcome categories, but the site's custom events omit pack names, URLs, filenames, and file paths.</p>
             </div>
             <div class="trust-card">
               <h3>Saved output</h3>
@@ -167,6 +167,11 @@
                   <td>The direct MRPACK URL and its response are handled by your browser.</td>
                   <td>The URL host and hosts listed by the downloaded pack manifest.</td>
                 </tr>
+                <tr>
+                  <td>Help email link</td>
+                  <td>Clicking the link opens your email app but does not send a message. Only information you choose to put in an email is sent.</td>
+                  <td>Your email provider and the maintainer inbox at <code>wuguang425@gmail.com</code>.</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -190,12 +195,15 @@
           <ul>
             <li>input type: upload, URL, or project;</li>
             <li>target: Launcher ZIP or Server ZIP;</li>
-            <li>status and first failure category;</li>
+            <li>conversion status and a typed failure category;</li>
+            <li>whether the after-test checkpoint was shown, answered Yes or No, or deferred;</li>
+            <li>an enumerated No reason such as launcher rejection, missing files, or download/open failure;</li>
             <li>a broad file-count bucket such as 1–10 or 11–50.</li>
           </ul>
           <p>
             Custom event parameters do not include the selected filename, pack name, project slug,
             direct URL, downloaded file path, report contents, or generated ZIP contents.
+            The checkpoint has no free-text field.
           </p>
         </section>
 
@@ -213,6 +221,11 @@
             retention is controlled through the site's Google Analytics configuration and Google's
             policies.
           </p>
+          <p>
+            The after-test checkpoint is kept only in the current page's memory. It resets when a new
+            conversion starts or the page reloads. The site does not create a separate feedback
+            database or store the checkpoint in browser storage.
+          </p>
         </section>
 
         <section class="article-section" aria-labelledby="choices">
@@ -222,6 +235,7 @@
             <li>Do not use remote modes if you do not want your browser to contact Modrinth or third-party file hosts.</li>
             <li>Use browser privacy controls or a content blocker to limit Google Analytics requests.</li>
             <li>Close the page after conversion to release in-memory file data; downloaded output remains wherever your browser saved it.</li>
+            <li>Use the help email link only if you want to contact the maintainer; review the message and attachments in your email app before sending.</li>
           </ul>
         </section>
 
@@ -231,7 +245,8 @@
             MRPACK to ZIP is maintained by
             <a href="https://github.com/xiaofei512">xiaofei512</a>. See the
             <a href="/about/">About page</a> for maintainer identity, tool boundaries, and a dated
-            conversion test. A public support inbox is not currently listed.
+            conversion test. Conversion help can be requested at
+            <a href="mailto:wuguang425@gmail.com?subject=MRPACK%20to%20ZIP%20help">wuguang425@gmail.com</a>.
           </p>
           <p>
             This page will be updated when the converter's data flow, analytics fields, support

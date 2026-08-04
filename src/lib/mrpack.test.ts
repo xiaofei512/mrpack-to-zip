@@ -2,7 +2,9 @@ import { createHash } from 'node:crypto'
 import JSZip from 'jszip'
 import { describe, expect, it, vi } from 'vitest'
 import {
+  ConversionError,
   convertMrpack,
+  conversionErrorDetails,
   createMissingFilesReport,
   parseProjectIdOrSlug,
   resolveProjectMrpack,
@@ -239,9 +241,81 @@ describe('convertMrpack', () => {
     expect(outputZip.file('../escape.jar')).toBeNull()
     expect(outputZip.file('escape.jar')).toBeNull()
   })
+
+  it('classifies unreadable archives and manifest failures without exposing source data', async () => {
+    await expect(
+      convertMrpack(
+        { kind: 'archive', data: bytes('not a zip'), sourceName: 'private-name.mrpack' },
+        { target: 'client' },
+      ),
+    ).rejects.toMatchObject({ code: 'archive_invalid' })
+
+    const missingManifest = await new JSZip().generateAsync({ type: 'arraybuffer' })
+    await expect(
+      convertMrpack({ kind: 'archive', data: missingManifest }, { target: 'client' }),
+    ).rejects.toMatchObject({ code: 'manifest_missing', message: 'Missing modrinth.index.json.' })
+
+    const invalidManifestZip = new JSZip()
+    invalidManifestZip.file('modrinth.index.json', '{not json')
+    await expect(
+      convertMrpack(
+        { kind: 'archive', data: await invalidManifestZip.generateAsync({ type: 'arraybuffer' }) },
+        { target: 'client' },
+      ),
+    ).rejects.toMatchObject({ code: 'manifest_invalid' })
+  })
+
+  it('classifies input, lookup, and source download failures', async () => {
+    await expect(
+      convertMrpack(
+        { kind: 'url', url: 'https://cdn.example/not-an-mrpack' },
+        { target: 'client', fetcher: vi.fn() },
+      ),
+    ).rejects.toMatchObject({ code: 'input_invalid' })
+
+    await expect(
+      resolveProjectMrpack('valid-slug', {
+        fetcher: vi.fn(async () => {
+          throw new Error('network detail')
+        }),
+      }),
+    ).rejects.toMatchObject({ code: 'source_lookup_failed' })
+
+    await expect(
+      convertMrpack(
+        { kind: 'url', url: 'https://cdn.example/pack.mrpack' },
+        {
+          target: 'client',
+          fetcher: vi.fn(async () => {
+            throw new Error('private network detail')
+          }),
+        },
+      ),
+    ).rejects.toMatchObject({ code: 'source_download_failed' })
+  })
 })
 
 describe('resolveProjectMrpack', () => {
+  it('distinguishes an invalid project from a temporary Modrinth response failure', async () => {
+    await expect(
+      resolveProjectMrpack('missing-project', {
+        fetcher: vi.fn(async () => new Response('', { status: 404 })),
+      }),
+    ).rejects.toMatchObject({
+      code: 'source_lookup_failed',
+      message: 'Invalid Modrinth project ID, slug, or URL.',
+    })
+
+    await expect(
+      resolveProjectMrpack('valid-project', {
+        fetcher: vi.fn(async () => new Response('', { status: 503 })),
+      }),
+    ).rejects.toMatchObject({
+      code: 'source_lookup_failed',
+      message: 'Modrinth project lookup is temporarily unavailable. Try again later.',
+    })
+  })
+
   it('accepts a Modrinth project URL and selects the newest release with a mrpack file', async () => {
     const fetcher = vi.fn(async () =>
       Response.json([
@@ -309,6 +383,17 @@ describe('resolveProjectMrpack', () => {
 })
 
 describe('input helpers and reports', () => {
+  it('returns a safe fallback for errors outside the conversion error contract', () => {
+    expect(conversionErrorDetails(new ConversionError('manifest_missing', 'Missing manifest.'))).toEqual({
+      code: 'manifest_missing',
+      message: 'Missing manifest.',
+    })
+    expect(conversionErrorDetails(new Error('secret URL https://private.example'))).toEqual({
+      code: 'unknown',
+      message: 'Conversion failed unexpectedly. Try again or check the troubleshooting guide.',
+    })
+  })
+
   it('parses project IDs, slugs, and Modrinth project URLs', () => {
     expect(parseProjectIdOrSlug('AANobbMI')).toBe('AANobbMI')
     expect(parseProjectIdOrSlug('fabulously-optimized')).toBe('fabulously-optimized')

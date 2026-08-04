@@ -14,9 +14,11 @@ import {
 } from 'lucide'
 import {
   convertMrpack as defaultConvertMrpack,
+  conversionErrorDetails,
   createMissingFilesReport,
   type ConversionResult,
   type ConversionTarget,
+  type MissingReason,
   type MrpackInput,
 } from './lib/mrpack'
 import { appMarkup } from './app-markup'
@@ -24,6 +26,17 @@ import { appMarkup } from './app-markup'
 type AnalyticsParams = Record<string, string | number>
 type TrackEvent = (name: string, params: AnalyticsParams) => void
 type SourceMode = 'project' | 'url' | 'upload'
+type OutcomeReason =
+  | 'download_or_open_failed'
+  | 'import_or_layout_rejected'
+  | 'runtime_or_setup_failed'
+  | 'required_files_missing'
+  | 'other_or_unsure'
+
+interface OutcomeReasonOption {
+  value: OutcomeReason
+  label: string
+}
 
 export interface AppDependencies {
   convertMrpack?: typeof defaultConvertMrpack
@@ -78,10 +91,56 @@ export function renderApp(root: HTMLElement, dependencies: AppDependencies = {})
   const downloadButton = query<HTMLButtonElement>(root, '#download-zip')
   const copyButton = query<HTMLButtonElement>(root, '#copy-missing')
   const reportButton = query<HTMLButtonElement>(root, '#download-report')
+  const outcomeFeedback = query<HTMLElement>(root, '#outcome-feedback')
+  const outcomeTarget = query<HTMLElement>(root, '#outcome-target')
+  const outcomeQuestionElement = query<HTMLElement>(root, '#outcome-question')
+  const outcomeHint = query<HTMLElement>(root, '#outcome-hint')
+  const outcomeActions = query<HTMLElement>(root, '#outcome-actions')
+  const outcomeYes = query<HTMLButtonElement>(root, '#outcome-yes')
+  const outcomeNo = query<HTMLButtonElement>(root, '#outcome-no')
+  const outcomeDeferred = query<HTMLButtonElement>(root, '#outcome-deferred')
+  const outcomeReasons = query<HTMLFieldSetElement>(root, '#outcome-reasons')
+  const outcomeReasonOptions = query<HTMLElement>(root, '#outcome-reason-options')
+  const outcomeReasonSubmit = query<HTMLButtonElement>(root, '#outcome-reason-submit')
+  const outcomeThanks = query<HTMLElement>(root, '#outcome-thanks')
+  const outcomeHelp = query<HTMLElement>(root, '#outcome-help')
+  const supportEmail = query<HTMLAnchorElement>(root, '#outcome-help a')
 
   let latestResult: ConversionResult | null = null
-  let latestInputType: string = 'upload'
+  let latestInputType: SourceMode = 'upload'
   let isConverting = false
+  let feedbackShown = false
+  let feedbackAnswered = false
+  let deferredTracked = false
+  let latestOutcomeReason: OutcomeReason | null = null
+
+  const resetOutcomeFeedback = () => {
+    feedbackShown = false
+    feedbackAnswered = false
+    deferredTracked = false
+    latestOutcomeReason = null
+    outcomeFeedback.hidden = true
+    outcomeActions.hidden = false
+    outcomeReasons.hidden = true
+    outcomeNo.setAttribute('aria-expanded', 'false')
+    outcomeDeferred.disabled = false
+    outcomeDeferred.textContent = "I haven't tested it yet"
+    outcomeReasonSubmit.disabled = true
+    outcomeReasonOptions.replaceChildren()
+    outcomeThanks.hidden = true
+    outcomeThanks.textContent = ''
+    outcomeHelp.hidden = true
+  }
+
+  const finishOutcomeFeedback = (message: string, showHelp: boolean) => {
+    feedbackAnswered = true
+    outcomeActions.hidden = true
+    outcomeReasons.hidden = true
+    outcomeNo.setAttribute('aria-expanded', 'false')
+    outcomeThanks.textContent = message
+    outcomeThanks.hidden = false
+    outcomeHelp.hidden = !showHelp
+  }
 
   const syncSourceMode = () => {
     const mode = selectedSource(root)
@@ -118,6 +177,7 @@ export function renderApp(root: HTMLElement, dependencies: AppDependencies = {})
     }
 
     latestResult = null
+    resetOutcomeFeedback()
     resultActions.hidden = true
     missingList.innerHTML = ''
     warningList.innerHTML = ''
@@ -142,21 +202,26 @@ export function renderApp(root: HTMLElement, dependencies: AppDependencies = {})
       latestResult = result
       renderResult(root, result)
       trackEvent(`convert_${result.status}`, {
-        input_type: input.type,
-        target,
-        status: result.status,
-        failure_reason: firstFailureReason(result),
-        file_count_bucket: fileCountBucket(result.filesTotal),
+        ...resultAnalyticsParams(result, input.type),
       })
+
+      if (result.status === 'partial') {
+        for (const reason of distinctFailureReasons(result)) {
+          trackEvent('convert_partial_reason', {
+            ...resultAnalyticsParams(result, input.type),
+            failure_reason: reason,
+          })
+        }
+      }
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Conversion failed.'
+      const failure = conversionErrorDetails(error)
       progress.hidden = true
-      showStatus(statusPanel, statusTitle, statusBody, 'Conversion failed', message, 'error')
+      showStatus(statusPanel, statusTitle, statusBody, 'Conversion failed', failure.message, 'error')
       trackEvent('convert_failed', {
         input_type: input.type,
         target,
         status: 'failed',
-        failure_reason: 'conversion_error',
+        failure_reason: failure.code,
         file_count_bucket: '0',
       })
     } finally {
@@ -173,11 +238,89 @@ export function renderApp(root: HTMLElement, dependencies: AppDependencies = {})
 
     downloadBlob(latestResult.zipBlob, outputFileName(latestResult))
     trackEvent('zip_downloaded', {
-      input_type: latestInputType,
-      target: latestResult.target,
-      status: latestResult.status,
-      failure_reason: firstFailureReason(latestResult),
-      file_count_bucket: fileCountBucket(latestResult.filesTotal),
+      ...resultAnalyticsParams(latestResult, latestInputType),
+    })
+
+    if (!feedbackShown) {
+      feedbackShown = true
+      renderOutcomeFeedback(
+        latestResult,
+        outcomeTarget,
+        outcomeQuestionElement,
+        outcomeHint,
+        outcomeReasonOptions,
+      )
+      outcomeFeedback.hidden = false
+      trackEvent('zip_feedback_shown', {
+        ...resultAnalyticsParams(latestResult, latestInputType),
+      })
+    }
+  })
+
+  outcomeReasonOptions.addEventListener('change', () => {
+    outcomeReasonSubmit.disabled = !selectedOutcomeReason(outcomeReasonOptions)
+  })
+
+  outcomeYes.addEventListener('click', () => {
+    if (!latestResult || feedbackAnswered) {
+      return
+    }
+
+    trackEvent('zip_outcome_yes', {
+      ...resultAnalyticsParams(latestResult, latestInputType),
+    })
+    finishOutcomeFeedback('Thanks. That confirms the ZIP supported your next step.', false)
+  })
+
+  outcomeNo.addEventListener('click', () => {
+    if (!latestResult || feedbackAnswered) {
+      return
+    }
+
+    outcomeReasons.hidden = false
+    outcomeNo.setAttribute('aria-expanded', 'true')
+    outcomeReasonOptions.querySelector<HTMLInputElement>('input')?.focus()
+  })
+
+  outcomeDeferred.addEventListener('click', () => {
+    if (!latestResult || feedbackAnswered) {
+      return
+    }
+
+    if (!deferredTracked) {
+      trackEvent('zip_outcome_deferred', {
+        ...resultAnalyticsParams(latestResult, latestInputType),
+      })
+      deferredTracked = true
+    }
+
+    outcomeDeferred.disabled = true
+    outcomeDeferred.textContent = 'Come back after testing'
+    outcomeHint.textContent = 'Keep this tab open, test the ZIP, then return to choose Yes or No.'
+  })
+
+  outcomeReasonSubmit.addEventListener('click', () => {
+    const reason = selectedOutcomeReason(outcomeReasonOptions)
+    if (!latestResult || feedbackAnswered || !reason) {
+      return
+    }
+
+    latestOutcomeReason = reason
+    trackEvent('zip_outcome_no', {
+      ...resultAnalyticsParams(latestResult, latestInputType),
+      outcome_reason: reason,
+    })
+    finishOutcomeFeedback('Thanks. Your reason was recorded without pack or file details.', true)
+  })
+
+  supportEmail.addEventListener('click', () => {
+    if (!latestResult || !latestOutcomeReason) {
+      return
+    }
+
+    trackEvent('support_email_clicked', {
+      ...resultAnalyticsParams(latestResult, latestInputType),
+      outcome_reason: latestOutcomeReason,
     })
   })
 
@@ -190,11 +333,7 @@ export function renderApp(root: HTMLElement, dependencies: AppDependencies = {})
     await navigator.clipboard?.writeText(report)
     copyButton.textContent = 'Copied'
     trackEvent('missing_files_copied', {
-      input_type: latestInputType,
-      target: latestResult.target,
-      status: latestResult.status,
-      failure_reason: firstFailureReason(latestResult),
-      file_count_bucket: fileCountBucket(latestResult.filesTotal),
+      ...resultAnalyticsParams(latestResult, latestInputType),
     })
   })
 
@@ -208,11 +347,7 @@ export function renderApp(root: HTMLElement, dependencies: AppDependencies = {})
       'mrpack-to-zip-report.txt',
     )
     trackEvent('report_downloaded', {
-      input_type: latestInputType,
-      target: latestResult.target,
-      status: latestResult.status,
-      failure_reason: firstFailureReason(latestResult),
-      file_count_bucket: fileCountBucket(latestResult.filesTotal),
+      ...resultAnalyticsParams(latestResult, latestInputType),
     })
   })
 }
@@ -338,13 +473,8 @@ function renderResult(root: HTMLElement, result: ConversionResult) {
   progress.hidden = true
   resultActions.hidden = false
 
-  const title =
-    result.status === 'success'
-      ? 'ZIP ready'
-      : result.status === 'partial'
-        ? 'Partial ZIP ready'
-        : 'Conversion failed'
-  const state = result.status === 'success' ? 'success' : result.status === 'partial' ? 'warning' : 'error'
+  const title = result.status === 'success' ? 'ZIP ready' : 'Partial ZIP ready'
+  const state = result.status === 'success' ? 'success' : 'warning'
 
   showStatus(
     statusPanel,
@@ -380,11 +510,83 @@ function resultStatusMessage(result: ConversionResult) {
     return `${base} Review the missing file list, then download the partial ZIP or copy the report.`
   }
 
-  if (result.status === 'failed') {
-    return `${base} No complete ZIP could be created.`
+  return base
+}
+
+function renderOutcomeFeedback(
+  result: ConversionResult,
+  target: HTMLElement,
+  question: HTMLElement,
+  hint: HTMLElement,
+  optionsRoot: HTMLElement,
+) {
+  const targetLabel = result.target === 'server' ? 'Server ZIP' : 'Launcher ZIP'
+  const statusLabel = result.status === 'partial' ? 'partial result' : 'complete result'
+  target.textContent = `${targetLabel} · ${statusLabel}`
+
+  if (result.status === 'partial') {
+    question.textContent =
+      result.target === 'server'
+        ? 'Were you still able to set up and start the server with this partial ZIP?'
+        : 'Were you still able to import or install this partial ZIP and launch the pack?'
+  } else {
+    question.textContent =
+      result.target === 'server'
+        ? 'Were you able to set up and start the server with this ZIP?'
+        : 'Were you able to import or install this ZIP and launch the pack?'
   }
 
-  return base
+  hint.textContent = 'Test the ZIP first. This checkpoint stays here while this tab remains open.'
+  optionsRoot.replaceChildren(
+    ...outcomeReasonOptions(result.target).map((option) => {
+      const label = document.createElement('label')
+      const input = document.createElement('input')
+      const text = document.createElement('span')
+      input.type = 'radio'
+      input.name = 'outcome-reason'
+      input.value = option.value
+      text.textContent = option.label
+      label.append(input, text)
+      return label
+    }),
+  )
+}
+
+function outcomeReasonOptions(target: ConversionTarget): OutcomeReasonOption[] {
+  if (target === 'server') {
+    return [
+      { value: 'download_or_open_failed', label: 'The ZIP could not be downloaded or opened' },
+      { value: 'import_or_layout_rejected', label: 'The ZIP layout did not work for my server setup' },
+      { value: 'runtime_or_setup_failed', label: 'The server would not start after setup' },
+      { value: 'required_files_missing', label: 'Required server files were missing' },
+      { value: 'other_or_unsure', label: 'Other / not sure' },
+    ]
+  }
+
+  return [
+    { value: 'download_or_open_failed', label: 'The ZIP could not be downloaded or opened' },
+    { value: 'import_or_layout_rejected', label: 'My launcher rejected the ZIP' },
+    { value: 'runtime_or_setup_failed', label: 'The pack would not start after import' },
+    { value: 'required_files_missing', label: 'Required files were missing' },
+    { value: 'other_or_unsure', label: 'Other / not sure' },
+  ]
+}
+
+function selectedOutcomeReason(root: HTMLElement): OutcomeReason | null {
+  const selected = root.querySelector<HTMLInputElement>('input[name="outcome-reason"]:checked')
+  const value = selected?.value
+
+  if (
+    value === 'download_or_open_failed' ||
+    value === 'import_or_layout_rejected' ||
+    value === 'runtime_or_setup_failed' ||
+    value === 'required_files_missing' ||
+    value === 'other_or_unsure'
+  ) {
+    return value
+  }
+
+  return null
 }
 
 function missingFileHint(reason: string) {
@@ -418,8 +620,28 @@ function defaultTrackEvent(name: string, params: AnalyticsParams) {
   window.gtag?.('event', name, params)
 }
 
-function firstFailureReason(result: ConversionResult) {
-  return result.missingFiles[0]?.reason ?? 'none'
+function resultAnalyticsParams(result: ConversionResult, inputType: SourceMode): AnalyticsParams {
+  return {
+    input_type: inputType,
+    target: result.target,
+    status: result.status,
+    failure_reason: primaryFailureReason(result),
+    file_count_bucket: fileCountBucket(result.filesTotal),
+  }
+}
+
+function primaryFailureReason(result: ConversionResult): MissingReason | 'none' {
+  const priority: MissingReason[] = [
+    'unsafe_path',
+    'hash_mismatch',
+    'invalid_response',
+    'download_failed',
+  ]
+  return priority.find((reason) => result.missingFiles.some((file) => file.reason === reason)) ?? 'none'
+}
+
+function distinctFailureReasons(result: ConversionResult): MissingReason[] {
+  return [...new Set(result.missingFiles.map((file) => file.reason))]
 }
 
 function fileCountBucket(count: number) {

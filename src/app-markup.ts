@@ -112,6 +112,27 @@ export function appMarkup() {
               <button id="copy-missing" type="button"><span data-lucide="clipboard-copy" aria-hidden="true"></span>Copy missing file list</button>
               <button id="download-report" type="button"><span data-lucide="file-archive" aria-hidden="true"></span>Download report .txt</button>
             </div>
+            <section id="outcome-feedback" class="outcome-feedback" aria-labelledby="outcome-question" hidden>
+              <p class="outcome-kicker">After-test checkpoint <span id="outcome-target"></span></p>
+              <h3 id="outcome-question">Did this ZIP complete your task?</h3>
+              <p id="outcome-hint">Test the ZIP first, then come back to this tab.</p>
+              <div id="outcome-actions" class="outcome-actions" role="group" aria-labelledby="outcome-question">
+                <button id="outcome-yes" type="button">Yes</button>
+                <button id="outcome-no" type="button" aria-expanded="false" aria-controls="outcome-reasons">No</button>
+                <button id="outcome-deferred" class="quiet-action" type="button">I haven't tested it yet</button>
+              </div>
+              <fieldset id="outcome-reasons" class="outcome-reasons" hidden>
+                <legend>What stopped you?</legend>
+                <div id="outcome-reason-options" class="outcome-reason-options"></div>
+                <button id="outcome-reason-submit" class="outcome-submit" type="button" disabled>Send feedback</button>
+              </fieldset>
+              <p id="outcome-thanks" class="outcome-thanks" role="status" hidden></p>
+              <p id="outcome-help" class="outcome-help" hidden>
+                Want help with this pack? Email
+                <a href="mailto:wuguang425@gmail.com?subject=MRPACK%20to%20ZIP%20help">wuguang425@gmail.com</a>.
+                Your email app opens only if you choose the link.
+              </p>
+            </section>
           </section>
         </form>
       </section>
