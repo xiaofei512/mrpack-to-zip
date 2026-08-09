@@ -59,22 +59,16 @@
         ]
       }
     </script>
-    <script>
-      const measurementId = '%VITE_GA_MEASUREMENT_ID%'
-      if (measurementId && !measurementId.startsWith('%')) {
-        const script = document.createElement('script')
-        script.async = true
-        script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`
-        document.head.append(script)
-        window.dataLayer = window.dataLayer || []
-        function gtag() {
-          window.dataLayer.push(arguments)
-        }
-        window.gtag = gtag
-        gtag('js', new Date())
-        gtag('config', measurementId)
-      }
-    </script>
+    <link rel="stylesheet" href="/analytics-consent.css" />
+    <script
+      src="/analytics-consent.js"
+      data-analytics-consent
+      data-analytics-enabled="%VITE_ANALYTICS_ENABLED%"
+      data-analytics-env="%VITE_ANALYTICS_ENV%"
+      data-ga-measurement-id="%VITE_GA_MEASUREMENT_ID%"
+      data-clarity-project-id="%VITE_CLARITY_PROJECT_ID%"
+      defer
+    ></script>
   </head>
   <body>
     <header class="site-header">
@@ -111,7 +105,7 @@
           <ul class="checklist">
             <li><a href="#summary">Short privacy summary</a></li>
             <li><a href="#conversion-data">Conversion data paths</a></li>
-            <li><a href="#analytics">Google Analytics</a></li>
+            <li><a href="#analytics">Google Analytics and Microsoft Clarity</a></li>
             <li><a href="#storage">Cookies, storage, and retention</a></li>
             <li><a href="#choices">Your choices</a></li>
             <li><a href="#operator">Operator and changes</a></li>
@@ -184,9 +178,9 @@
         </section>
 
         <section class="article-section" aria-labelledby="analytics">
-          <h2 id="analytics">Google Analytics</h2>
+          <h2 id="analytics">Google Analytics and Microsoft Clarity</h2>
           <p>
-            The production site loads Google Analytics 4 using measurement ID
+            The production site loads optional Google Analytics 4 using measurement ID
             <code>G-PYDQW2NQP0</code>. Google may process page, device, browser, approximate location,
             and interaction information under the
             <a href="https://policies.google.com/privacy">Google Privacy Policy</a>.
@@ -212,8 +206,12 @@
           <p>
             The converter code does not store pack data in <code>localStorage</code> or
             <code>sessionStorage</code>, and it does not set its own application cookies. Google
-            Analytics may use cookies or similar browser identifiers. Browser settings or content
-            blockers can limit that analytics storage.
+            Analytics may use cookies or similar browser identifiers. Microsoft Clarity may set
+            <code>_clck</code> and <code>_clsk</code> cookies to associate sessions and improve
+            session analysis. After consent, Clarity may observe visible page content in its
+            session measurements; do not enter sensitive information into the converter.
+            Browser settings or content blockers can limit that analytics storage.
+            Neither service loads until you choose “Allow analytics” in the consent control.
           </p>
           <p>
             Because there is no conversion backend, the site does not retain uploaded MRPACK files,
@@ -233,7 +231,7 @@
           <ul class="evidence-list">
             <li>Use Upload File mode when you do not want to send a project identifier or direct MRPACK URL to a lookup service.</li>
             <li>Do not use remote modes if you do not want your browser to contact Modrinth or third-party file hosts.</li>
-            <li>Use browser privacy controls or a content blocker to limit Google Analytics requests.</li>
+            <li>Use the Analytics settings control, browser privacy controls, or a content blocker to limit analytics requests.</li>
             <li>Close the page after conversion to release in-memory file data; downloaded output remains wherever your browser saved it.</li>
             <li>Use the help email link only if you want to contact the maintainer; review the message and attachments in your email app before sending.</li>
           </ul>

@@ -58,22 +58,16 @@
         ]
       }
     </script>
-    <script>
-      const measurementId = '%VITE_GA_MEASUREMENT_ID%'
-      if (measurementId && !measurementId.startsWith('%')) {
-        const script = document.createElement('script')
-        script.async = true
-        script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`
-        document.head.append(script)
-        window.dataLayer = window.dataLayer || []
-        function gtag() {
-          window.dataLayer.push(arguments)
-        }
-        window.gtag = gtag
-        gtag('js', new Date())
-        gtag('config', measurementId)
-      }
-    </script>
+    <link rel="stylesheet" href="/analytics-consent.css" />
+    <script
+      src="/analytics-consent.js"
+      data-analytics-consent
+      data-analytics-enabled="%VITE_ANALYTICS_ENABLED%"
+      data-analytics-env="%VITE_ANALYTICS_ENV%"
+      data-ga-measurement-id="%VITE_GA_MEASUREMENT_ID%"
+      data-clarity-project-id="%VITE_CLARITY_PROJECT_ID%"
+      defer
+    ></script>
   </head>
   <body>
     <header class="site-header">

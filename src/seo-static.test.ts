@@ -101,6 +101,27 @@ describe('static SEO files', () => {
     expect(JSON.stringify(input)).toContain('privacy/index.html')
   })
 
+  it('uses the shared consent-gated analytics loader on every static page', () => {
+    const pages = [
+      'index.html',
+      'blog/index.html',
+      'blog/mrpack-conversion-errors/index.html',
+      'blog/launcher-zip-vs-server-zip/index.html',
+      'about/index.html',
+      'privacy/index.html',
+    ]
+
+    for (const path of pages) {
+      const html = readFileSync(path, 'utf8')
+      expect(html).toContain('src="/analytics-consent.js"')
+      expect(html).toContain('data-analytics-consent')
+      expect(html).toContain('data-analytics-enabled="%VITE_ANALYTICS_ENABLED%"')
+      expect(html).toContain('data-analytics-env="%VITE_ANALYTICS_ENV%"')
+      expect(html).toContain('data-clarity-project-id="%VITE_CLARITY_PROJECT_ID%"')
+      expect(html).not.toContain('googletagmanager.com/gtag/js')
+    }
+  })
+
   it('publishes blog URLs in the sitemap', () => {
     const sitemap = readFileSync('public/sitemap.xml', 'utf8')
 
