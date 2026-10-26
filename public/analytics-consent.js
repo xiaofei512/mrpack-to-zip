@@ -77,7 +77,8 @@
     }
 
     window.dataLayer = window.dataLayer || [];
-    window.gtag = (...args) => window.dataLayer.push(args);
+    // Google tag commands use Arguments objects in the dataLayer queue.
+    window.gtag = function () { window.dataLayer.push(arguments); };
     window.gtag('consent', 'default', {
       ad_storage: 'denied',
       ad_user_data: 'denied',
